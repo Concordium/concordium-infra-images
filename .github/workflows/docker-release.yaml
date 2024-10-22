@@ -25,6 +25,10 @@ jobs:
       - name: Login to docker
         run: |
 #          echo ${{env.PASS}} | docker login --username ${{env.USERNAME}} --password-stdin
+      - name: Clone repo
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
 
       - name: build docker image
         run: |
