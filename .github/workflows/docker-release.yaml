@@ -28,7 +28,7 @@ jobs:
 
       - name: build docker image
         run: |
-          docker build --build-arg rust_version="${{env.RUST_VERSION}}" --build-arg ghc_version="${{env.GHC_VERSION}}" --label rust_version="${{env.RUST_VERSION}}" --label ghc_version="${{env.GHC_VERSION}}" --label git_commit="$GIT_COMMIT" f "docker/base.Dockerfile" t "${{env.IMAGE_NAME}}"
+          docker build --build-arg rust_version="${{env.RUST_VERSION}}" --build-arg ghc_version="${{env.GHC_VERSION}}" --label rust_version="${{env.RUST_VERSION}}" --label ghc_version="${{env.GHC_VERSION}}" -f "docker/base.Dockerfile" -t "${{env.IMAGE_NAME}}:rust${{env.RUST_VERSION}}-ghc${{env.GHC_VERSION}}" .
 
       - name: Push docker image
         run: |
