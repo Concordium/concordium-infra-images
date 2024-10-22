@@ -24,7 +24,7 @@ jobs:
           fi
       - name: Login to docker
         run: |
-          echo ${{env.PASS}} | docker login --username ${{env.USERNAME}} --password-stdin
+#          echo ${{env.PASS}} | docker login --username ${{env.USERNAME}} --password-stdin
 
       - name: build docker image
         run: |
