@@ -1,0 +1,35 @@
+on: 
+  push:
+    branches:
+      - "ekw/SRE-1004/release-base-image"
+
+env:
+  RUST_VERSION: "1.73.0"
+  GHC_VERSION: "9.6.4"
+  
+jobs:
+  release-base-image:
+    runs-on: ubuntu-latest
+    env:
+      IMAGE_NAME: "concordium/base:"rust${{env.RUST_VERSION}}-ghc${{env.GHC_VERSION}}""
+
+    steps:
+      - name: Check if image exist
+        run: |
+          set +e
+          docker manifest inspect ${{env.IMAGE_NAME}}
+          exitcode=$?
+          if [ exitcode -eq "1" ]
+            echo "Error: ${{env.IMAGE_NAME}} already exist"
+          fi
+      - name: Login to docker
+        run: |
+          echo ${{env.PASS}} | docker login --username ${{env.USERNAME}} --password-stdin
+
+      - name: build docker image
+        run: |
+          docker build --build-arg rust_version="${{env.RUST_VERSION}}" --build-arg ghc_version="${{env.GHC_VERSION}}" --label rust_version="${{env.RUST_VERSION}}" --label ghc_version="${{env.GHC_VERSION}}" --label git_commit="$GIT_COMMIT" f "docker/base.Dockerfile" t "${{env.IMAGE_NAME}}"
+
+      - name: Push docker image
+        run: |
+          echo ${{env.IMAGE_NAME}}
