@@ -11,16 +11,16 @@ jobs:
   release-base-image:
     runs-on: ubuntu-latest
     env:
-      IMAGE_NAME: "concordium/base:rust${{env.RUST_VERSION}}-ghc${{env.GHC_VERSION}}"
+      IMAGE_NAME: "concordium/base"
 
     steps:
       - name: Check if image exist
         run: |
           set +e
-          docker manifest inspect ${{env.IMAGE_NAME}}
+          docker manifest inspect ${{env.IMAGE_NAME}}:rust${{env.RUST_VERSION}}-ghc${{env.GHC_VERSION}}
           exitcode=$?
           if [ exitcode -eq "1" ]
-            echo "Error: ${{env.IMAGE_NAME}} already exist"
+            echo "Error: ${{env.IMAGE_NAME}}:rust${{env.RUST_VERSION}}-ghc${{env.GHC_VERSION}} already exist"
           fi
       - name: Login to docker
         run: |
@@ -32,4 +32,4 @@ jobs:
 
       - name: Push docker image
         run: |
-          echo ${{env.IMAGE_NAME}}
+          echo ${{env.IMAGE_NAME}}:rust${{env.RUST_VERSION}}-ghc${{env.GHC_VERSION}}
