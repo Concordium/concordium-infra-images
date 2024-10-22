@@ -11,7 +11,7 @@ jobs:
   release-base-image:
     runs-on: ubuntu-latest
     env:
-      IMAGE_NAME: "concordium/base:"rust${{env.RUST_VERSION}}-ghc${{env.GHC_VERSION}}""
+      IMAGE_NAME: "concordium/base:rust${{env.RUST_VERSION}}-ghc${{env.GHC_VERSION}}"
 
     steps:
       - name: Check if image exist
