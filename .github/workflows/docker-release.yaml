@@ -23,7 +23,7 @@ jobs:
           set +e
           docker manifest inspect ${{env.IMAGE_NAME}}:${{env.IMAGE_TAG}}
           exitcode=$?
-          if [ $exitcode -eq "1" ]; then
+          if [ $exitcode -eq "0" ]; then
             echo "Error: ${{env.IMAGE_NAME}}:rust${{env.RUST_VERSION}}-ghc${{env.GHC_VERSION}} already exist"
             exit 1
           fi
