@@ -25,6 +25,7 @@ jobs:
           exitcode=$?
           if [ $exitcode -eq "1" ]; then
             echo "Error: ${{env.IMAGE_NAME}}:rust${{env.RUST_VERSION}}-ghc${{env.GHC_VERSION}} already exist"
+            exit 1
           fi
 
       - name: Login to Docker Hub
