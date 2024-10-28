@@ -6,6 +6,7 @@ on:
 env:
   RUST_VERSION: "1.73.0"
   GHC_VERSION: "9.6.4"
+  IMAGE_TAG: rust1.73-ghc9.6.4
   
 jobs:
   release-base-image:
@@ -20,7 +21,7 @@ jobs:
       - name: Check if image exist
         run: |
           set +e
-          docker manifest inspect ${{env.IMAGE_NAME}}:rust${{env.RUST_VERSION}}-ghc${{env.GHC_VERSION}}
+          docker manifest inspect ${{env.IMAGE_NAME}}:${{env.IMAGE_TAG}}
           exitcode=$?
           if [ $exitcode -eq "1" ]; then
             echo "Error: ${{env.IMAGE_NAME}}:rust${{env.RUST_VERSION}}-ghc${{env.GHC_VERSION}} already exist"
@@ -39,8 +40,8 @@ jobs:
 
       - name: build docker image
         run: |
-          docker build --build-arg rust_version="${{env.RUST_VERSION}}" --build-arg ghc_version="${{env.GHC_VERSION}}" --label rust_version="${{env.RUST_VERSION}}" --label ghc_version="${{env.GHC_VERSION}}" -f "docker/base.Dockerfile" -t "${{env.IMAGE_NAME}}:rust${{env.RUST_VERSION}}-ghc${{env.GHC_VERSION}}" .
+          docker build --build-arg rust_version="${{env.RUST_VERSION}}" --build-arg ghc_version="${{env.GHC_VERSION}}" --label rust_version="${{env.RUST_VERSION}}" --label ghc_version="${{env.GHC_VERSION}}" -f "docker/base.Dockerfile" -t "${{env.IMAGE_NAME}}:${{env.IMAGE_TAG}}" .
 
       - name: Push docker image
         run: |
-          echo ${{env.IMAGE_NAME}}:rust${{env.RUST_VERSION}}-ghc${{env.GHC_VERSION}}
+          echo ${{env.IMAGE_NAME}}:${{env.IMAGE_TAG}}
