@@ -1,7 +1,7 @@
 on: 
   push:
-    branches:
-      - "ekw/SRE-1004/release-base-image"
+    paths:
+      - ".github/workflow/docker-release.yaml"
 
 env:
   RUST_VERSION: "1.73.0"
@@ -45,4 +45,4 @@ jobs:
 
       - name: Push docker image
         run: |
-          echo ${{env.IMAGE_NAME}}:${{env.IMAGE_TAG}}
+          docker push ${{env.IMAGE_NAME}}:${{env.IMAGE_TAG}}
