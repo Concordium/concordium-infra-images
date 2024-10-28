@@ -1,9 +1,7 @@
 on: 
   push:
-    branches:
-      - "ekw/SRE-1004/*"
-#    paths:
-#      - ".github/workflow/docker-release.yaml"
+    paths:
+      - ".github/workflow/docker-release.yaml"
   
 jobs:
   release-base-image:
@@ -15,7 +13,7 @@ jobs:
       DOCKERHUB_TOKEN: ${{secrets.DOCKERHUB_TOKEN}}
       RUST_VERSION: "1.73.0"
       GHC_VERSION: "9.6.4"
-      IMAGE_TAG: rust1.73-ghc9.6.4-test
+      IMAGE_TAG: rust1.73-ghc9.6.4
 
     steps:
       - name: Check if image exist
