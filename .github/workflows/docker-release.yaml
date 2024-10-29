@@ -21,7 +21,7 @@ jobs:
       - name: Get the Image tag
         env:
           TAG: ${{ github.ref_name }}
-        run: echo "IMAGE_TAG=${TAG#ekw/}"" >> $GITHUB_ENV #run: echo "IMAGE_TAG=${TAG##release/base-image-*}" >> $GITHUB_ENV
+        run: echo "IMAGE_TAG=${TAG##ekw/SRE-1004/release-*}"" >> $GITHUB_ENV #run: echo "IMAGE_TAG=${TAG##release/base-image-*}" >> $GITHUB_ENV
 
       - name: Check if image exist
         run: |
