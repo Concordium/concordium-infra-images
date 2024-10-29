@@ -1,32 +1,14 @@
-# Contents:
-#   - Rust@$rust_version
-#   - GHC@$ghc_version
-#   - stack@$stack_version
-#   - wabt@1.0.19
-#   - nvm@0.37.2 + node@latest
-#
-# Installed dependencies:
-#   - LMDB
-#   - Postgresql
-#   - GCC
-#   - Clang + Cmake: for flatbuffers
-#   - zlib
-#   - OpenSSL + pkg-conf
-#   - flatbuffers@v22.12.06
-#   - Unbound
-#
-# Expected build args:
-#   - ghc_version
-#   - rust_version
-
 ARG ghc_version
 
 FROM haskell:${ghc_version}-buster
 
-ARG flatbuffers_tag=v22.12.06
+ARG flatbuffers_tag
 ARG rust_version
+ARG protoc_version
+ARG nvm_sh_version
+ARG cmake_version
 
-ENV PROTOC_VERSION=3.15.3
+ENV PROTOC_VERSION=${protoc_version}
 
 ENV LANG C.UTF-8
 
@@ -59,8 +41,8 @@ RUN curl -L https://github.com/protocolbuffers/protobuf/releases/download/v${PRO
     rm protoc.zip
 
 # Install CMAKE version 3.25 and extract it to /usr/local
-RUN curl -L https://github.com/Kitware/CMake/releases/download/v3.25.1/cmake-3.25.1-linux-x86_64.tar.gz --output cmake-3.25.1-linux-x86_64.tar.gz && \
-    tar xf cmake-3.25.1-linux-x86_64.tar.gz -C /usr/local --strip-components=1
+RUN curl -L https://github.com/Kitware/CMake/releases/download/v${cmake_version}/cmake-{cmake_version}-linux-x86_64.tar.gz --output cmake-3.25.1-linux-x86_64.tar.gz && \
+    tar xf cmake-${cmake_version}-linux-x86_64.tar.gz -C /usr/local --strip-components=1
 
 # Install rust.
 RUN curl https://sh.rustup.rs -sSf | sh -s -- --profile minimal --default-toolchain "$rust_version" --component clippy -y
@@ -79,7 +61,7 @@ RUN git clone --branch "$flatbuffers_tag" --depth 1 https://github.com/google/fl
 RUN stack update
 
 # Install nvm and node.
-RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.37.2/install.sh | bash && \
+RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/${nvm_sh_version}/install.sh | bash && \
     . $NVM_DIR/nvm.sh && \
     nvm install node
 
