@@ -26,6 +26,7 @@ jobs:
       - name: Check if image exist
         run: |
           set +e
+          echo ${{github.ref_name}}
           echo ${{env.IMAGE_TAG}}
           docker manifest inspect ${{env.IMAGE_NAME}}:${{env.IMAGE_TAG}}
           exitcode=$?
