@@ -63,11 +63,3 @@ jobs:
             flatbuffers_tag="${{env.FLATBUFFERS_VERSION}}"
             nvm_sh_version="${{env.NVM_SH_VERSION}}"
             cmake_version="${{env.CMAKE_VERSION}}"
-
-      #- name: build docker image
-      #  run: |
-      #    docker build --build-arg rust_version="${{env.RUST_VERSION}}" --build-arg ghc_version="${{env.GHC_VERSION}}" --build-arg protoc_version="${{env.PROTOC_VERSION}}" --build-arg flatbuffers_tag="${{env.FLATBUFFERS_VERSION}}" --build-arg nvm_sh_version="${{env.NVM_SH_VERSION}}" --build-arg cmake_version="${{env.CMAKE_VERSION}}" --label rust_version="${{env.RUST_VERSION}}" --label ghc_version="${{env.GHC_VERSION}}" -f "docker/base.Dockerfile" -t "${{env.SERVICE_NAME}}:${{env.IMAGE_TAG}}" .
-#
-      #- name: Push docker image
-      #  run: |
-      #    docker push ${{env.SERVICE_NAME}}:${{env.IMAGE_TAG}}
