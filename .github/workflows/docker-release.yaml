@@ -50,5 +50,5 @@ jobs:
 
       - name: Push docker image
         run: |
-          echo ${{IMAGE_TAG}}
+          echo ${{env.IMAGE_TAG}}
 #          docker push ${{env.IMAGE_NAME}}:${{env.IMAGE_TAG}}
