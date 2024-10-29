@@ -1,10 +1,13 @@
 on: 
   push:
-    paths:
-      - ".github/workflow/docker-release.yaml"
+    tags:
+      - release/*
+    branches:
+      - ekw/SRE-1004/*
   
 jobs:
   release-base-image:
+    if: ${{ contains(github.ref_name, 'base-image') }}
     runs-on: ubuntu-latest
     environment: release
     env:
@@ -13,9 +16,13 @@ jobs:
       DOCKERHUB_TOKEN: ${{secrets.DOCKERHUB_TOKEN}}
       RUST_VERSION: "1.73.0"
       GHC_VERSION: "9.6.4"
-      IMAGE_TAG: rust1.73-ghc9.6.4
 
     steps:
+      - name: Get the Image tag
+        env:
+          TAG: ${{ github.ref_name }}
+        run: echo "IMAGE_TAG=${TAG##ekw/SRE-1004/release-*}" #run: echo "IMAGE_TAG=${TAG##release/base-image-*}" >> $GITHUB_ENV
+
       - name: Check if image exist
         run: |
           set +e
@@ -43,4 +50,5 @@ jobs:
 
       - name: Push docker image
         run: |
-          docker push ${{env.IMAGE_NAME}}:${{env.IMAGE_TAG}}
+          echo ${{IMAGE_TAG}}
+#          docker push ${{env.IMAGE_NAME}}:${{env.IMAGE_TAG}}
