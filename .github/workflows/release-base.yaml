@@ -1,7 +1,7 @@
 on:
   push:
     tags:
-      - release/base-image-*
+      - base-*
 
 env:
   SERVICE_NAME: "base"
@@ -16,7 +16,7 @@ env:
 
 jobs:
   release-base-image:
-    if: ${{ startsWith(github.ref_name, 'release/base-image') }}
+    if: ${{ startsWith(github.ref_name, '${{env.SERVICE_NAME}}') }}
     runs-on: ubuntu-latest
     environment: release
     steps:
