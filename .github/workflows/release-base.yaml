@@ -4,7 +4,7 @@ on:
       - release/base-image-*
 
 env:
-  SERVICE_NAME: "concordium/base"
+  SERVICE_NAME: "base"
   DOCKERHUB_USERNAME: ${{secrets.DOCKERHUB_USERNAME}}
   DOCKERHUB_TOKEN: ${{secrets.DOCKERHUB_TOKEN}}
   RUST_VERSION: "1.73.0"
@@ -23,12 +23,12 @@ jobs:
       - name: Get the Image tag
         env:
           TAG: ${{ github.ref_name }}
-        run: echo "IMAGE_TAG=${TAG##release/base-image-}" >> $GITHUB_ENV
+        run: echo "FULL_IMAGE_TAG=concordium/${{ env.SERVICE_NAME }}:${TAG##${{ env.SERVICE_NAME}}-}" >> $GITHUB_ENV
 
       - name: Check if image exist
         run: |
           set +e
-          docker manifest inspect ${{env.SERVICE_NAME}}:${{env.IMAGE_TAG}}
+          docker manifest inspect ${{ env.FULL_IMAGE_TAG }}
           exitcode=$?
           if [ $exitcode -eq "0" ]; then
             echo "Error: ${{env.SERVICE_NAME}}:rust${{env.RUST_VERSION}}-ghc${{env.GHC_VERSION}} already exist"
@@ -51,7 +51,7 @@ jobs:
         with:
           context: .
           file: docker/base.Dockerfile
-          tags: ${{ env.IMAGE_TAG }}
+          tags: ${{ env.FULL_IMAGE_TAG }}
           no-cache: true
           push: false
           ssh: |
