@@ -19,11 +19,11 @@ jobs:
     with:
       SERVICE_NAME: "static-libraries"
       BUILD_ARGS: |
-        rust_version=1.73.0
-        ghc_version=9.6.4
-        protoc_version=3.15.3
-        flatbuffers_tag=v22.12.06
-        nvm_sh_version=v0.37.2
-        cmake_version=3.25.1
+        rust_version=${{ env.RUST_VERSION }}
+        ghc_version=${{ env.GHC_VERSION }}
+        protoc_version=${{ env.PROTOC_VERSION }}
+        flatbuffers_tag=${{ env.FLATBUFFERS_VERSION }}
+        nvm_sh_version=${{ env._NVM_SH_VERSION }}
+        cmake_version=${{ env.CMAKE_VERSION }}
       DOCKER_FILE: docker/base.Dockerfile
     secrets: inherit
