@@ -54,8 +54,6 @@ jobs:
           tags: ${{ env.FULL_IMAGE_TAG }}
           no-cache: true
           push: false
-          ssh: |
-            default=./id_rsa
           build-args: |
             rust_version="${{env.RUST_VERSION}}"
             ghc_version="${{env.GHC_VERSION}}"
