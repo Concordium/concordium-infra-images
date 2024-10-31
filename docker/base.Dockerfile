@@ -35,7 +35,7 @@ RUN apt-get update && \
     && rm -rf /var/lib/apt/lists/*
 
 # Install protoc by version specified in environment.
-RUN curl -L https://github.com/protocolbuffers/protobuf/releases/download/v${protoc_version}/protoc-${protoc_version}-linux-x86_64.zip -o protoc.zip; \
+RUN curl -L "https://github.com/protocolbuffers/protobuf/releases/download/v${protoc_version}/protoc-${protoc_version}-linux-x86_64.zip" -o protoc.zip; \
     unzip protoc.zip bin/protoc -d /usr/; \
     rm protoc.zip
 
