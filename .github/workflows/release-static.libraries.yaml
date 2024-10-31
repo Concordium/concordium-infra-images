@@ -11,6 +11,13 @@ env:
   FLATBUFFERS_VERSION: "v22.12.06"
   NVM_SH_VERSION: "v0.37.2"
   CMAKE_VERSION: "3.25.1"
+  BUILD_ARGS: |
+  rust_version=${{ env.RUST_VERSION }}
+  ghc_version=${{ env.GHC_VERSION }}
+  protoc_version=${{ env.PROTOC_VERSION }}
+  flatbuffers_tag=${{ env.FLATBUFFERS_VERSION }}
+  nvm_sh_version=${{ env._NVM_SH_VERSION }}
+  cmake_version=${{ env.CMAKE_VERSION }}
 
 jobs:
   release-base-image:
@@ -18,12 +25,6 @@ jobs:
     uses: concordium/.github/.github/workflows/docker-release-workflow.yaml@ekw/workflow-templates
     with:
       SERVICE_NAME: "static-libraries"
-      BUILD_ARGS: |
-        rust_version=${{ env.RUST_VERSION }}
-        ghc_version=${{ env.GHC_VERSION }}
-        protoc_version=${{ env.PROTOC_VERSION }}
-        flatbuffers_tag=${{ env.FLATBUFFERS_VERSION }}
-        nvm_sh_version=${{ env._NVM_SH_VERSION }}
-        cmake_version=${{ env.CMAKE_VERSION }}
+      BUILD_ARGS: ${{ env.BUILD_ARGS }}
       DOCKER_FILE: docker/base.Dockerfile
     secrets: inherit
