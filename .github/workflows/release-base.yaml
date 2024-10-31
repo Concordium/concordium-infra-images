@@ -57,7 +57,7 @@ jobs:
           build-args: |
             rust_version=${{env.RUST_VERSION}}
             ghc_version=${{env.GHC_VERSION}}
-            protoc_version="{{env.PROTOC_VERSION}}
+            protoc_version=${{env.PROTOC_VERSION}}
             flatbuffers_tag=${{env.FLATBUFFERS_VERSION}}
             nvm_sh_version=${{env.NVM_SH_VERSION}}
             cmake_version=${{env.CMAKE_VERSION}}
