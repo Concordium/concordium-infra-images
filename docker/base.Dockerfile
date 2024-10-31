@@ -1,12 +1,11 @@
 ARG ghc_version
-
-FROM haskell:${ghc_version}-buster
-
 ARG flatbuffers_tag
 ARG rust_version
 ARG protoc_version
 ARG nvm_sh_version
 ARG cmake_version
+
+FROM haskell:${ghc_version}-buster
 
 ENV PROTOC_VERSION=${protoc_version}
 
@@ -41,7 +40,7 @@ RUN curl -L https://github.com/protocolbuffers/protobuf/releases/download/v${PRO
     rm protoc.zip
 
 # Install CMAKE version 3.25 and extract it to /usr/local
-RUN curl -L https://github.com/Kitware/CMake/releases/download/v${cmake_version}/cmake-{cmake_version}-linux-x86_64.tar.gz --output cmake-3.25.1-linux-x86_64.tar.gz && \
+RUN curl -L https://github.com/Kitware/CMake/releases/download/v${cmake_version}/cmake-${cmake_version}-linux-x86_64.tar.gz --output cmake-3.25.1-linux-x86_64.tar.gz && \
     tar xf cmake-${cmake_version}-linux-x86_64.tar.gz -C /usr/local --strip-components=1
 
 # Install rust.
