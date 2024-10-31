@@ -15,7 +15,7 @@ env:
 jobs:
   release-base-image:
     if: ${{ startsWith(github.ref_name, '${{env.SERVICE_NAME}}') }}
-    uses: concordium/.github/.github/workflows/docker-release-workflow.yaml:ekw/workflow-templates
+    uses: concordium/.github/.github/workflows/docker-release-workflow.yaml@ekw/workflow-templates
     with:
       SERVICE_NAME: ${{env.SERVICE_NAME}}
       BUILD_ARGS: |
