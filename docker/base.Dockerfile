@@ -41,7 +41,7 @@ RUN curl -L https://github.com/protocolbuffers/protobuf/releases/download/v${pro
 
 # Install CMAKE version 3.25 and extract it to /usr/local
 RUN curl -L https://github.com/Kitware/CMake/releases/download/v${cmake_version}/cmake-${cmake_version}-linux-x86_64.tar.gz --output cmake-${cmake_version}-linux-x86_64.tar.gz && \
-    gzip -d cmake-${cmake_version}-linux-x86_64.tar.gz | tar xf cmake-${cmake_version}-linux-x86_64.tar.gz -C /usr/local --strip-components=1
+    gzip -dc cmake-${cmake_version}-linux-x86_64.tar.gz | tar xf cmake-${cmake_version}-linux-x86_64.tar.gz -C /usr/local --strip-components=1
 
 # Install rust.
 RUN curl https://sh.rustup.rs -sSf | sh -s -- --profile minimal --default-toolchain "$rust_version" --component clippy -y
