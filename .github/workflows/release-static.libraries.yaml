@@ -12,12 +12,12 @@ env:
   NVM_SH_VERSION: "v0.37.2"
   CMAKE_VERSION: "3.25.1"
   BUILD_ARGS: |
-  rust_version=${{ env.RUST_VERSION }}
-  ghc_version=${{ env.GHC_VERSION }}
-  protoc_version=${{ env.PROTOC_VERSION }}
-  flatbuffers_tag=${{ env.FLATBUFFERS_VERSION }}
-  nvm_sh_version=${{ env._NVM_SH_VERSION }}
-  cmake_version=${{ env.CMAKE_VERSION }}
+    rust_version=${{ env.RUST_VERSION }}
+    ghc_version=${{ env.GHC_VERSION }}
+    protoc_version=${{ env.PROTOC_VERSION }}
+    flatbuffers_tag=${{ env.FLATBUFFERS_VERSION }}
+    nvm_sh_version=${{ env._NVM_SH_VERSION }}
+    cmake_version=${{ env.CMAKE_VERSION }}
 
 jobs:
   release-base-image:
