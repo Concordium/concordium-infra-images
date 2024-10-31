@@ -17,7 +17,7 @@ jobs:
     if: ${{ startsWith(github.ref_name, '${{env.SERVICE_NAME}}') }}
     uses: concordium/.github/.github/workflows/docker-release-workflow.yaml@ekw/workflow-templates
     with:
-      SERVICE_NAME: ${{env.SERVICE_NAME}}
+      SERVICE_NAME: "${{env.SERVICE_NAME}}"
       BUILD_ARGS: |
         rust_version=${{env.RUST_VERSION}}
         ghc_version=${{env.GHC_VERSION}}
