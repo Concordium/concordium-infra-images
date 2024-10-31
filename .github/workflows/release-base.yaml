@@ -16,7 +16,7 @@ env:
 
 jobs:
   release-base-image:
-    if: ${{ startsWith(github.ref_name, '${{env.SERVICE_NAME}}') }}
+    if: ${{ startsWith(github.ref_name, 'ekw') }} #${{ startsWith(github.ref_name, '${{env.SERVICE_NAME}}') }}
     runs-on: ubuntu-latest
     environment: release
     steps:
@@ -28,7 +28,7 @@ jobs:
 
       - name: Get the Image tag
         env:
-          TAG: ${{ github.ref_name }}
+          TAG: 'base-rust.1.73-ghc9.6.4-test' #${{ github.ref_name }}
         run: echo "FULL_IMAGE_TAG=concordium/${{ env.SERVICE_NAME }}:${TAG##${{ env.SERVICE_NAME}}-}" >> $GITHUB_ENV
 
       - name: Check if image exist
