@@ -1,20 +1,22 @@
 ARG ghc_version
+
+FROM haskell:${ghc_version}-buster
+
 ARG flatbuffers_tag
 ARG rust_version
 ARG protoc_version
 ARG nvm_sh_version
 ARG cmake_version
 
-FROM haskell:${ghc_version}-buster
 
-ENV PROTOC_VERSION=${protoc_version}
 
 ENV LANG C.UTF-8
 
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends gnupg ca-certificates dirmngr musl-tools && \
-    rm -rf /var/lib/apt/lists/*
+apt-get install -y --no-install-recommends gnupg ca-certificates dirmngr musl-tools && \
+rm -rf /var/lib/apt/lists/*
 
+ENV PROTOC_VERSION=${protoc_version}
 ENV DEBIAN_FRONTEND=noninteractive
 ENV PATH="${PATH}:/root/.cargo/bin"
 ENV NVM_DIR="/root/.nvm"
