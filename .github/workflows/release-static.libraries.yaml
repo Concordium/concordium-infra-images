@@ -14,7 +14,7 @@ env:
 
 jobs:
   release-base-image:
-    if: ${{ startsWith(github.ref_name, 'ekw') }} #${{ startsWith(github.ref_name, '${{env.SERVICE_NAME}}') }}
+#    if: ${{ startsWith(github.ref_name, '${{env.SERVICE_NAME}}') }}
     uses: concordium/.github/.github/workflows/docker-release-workflow.yaml@ekw/workflow-templates
     with:
       SERVICE_NAME: "static-libraries"
@@ -26,6 +26,4 @@ jobs:
         nvm_sh_version=v0.37.2
         cmake_version=3.25.1
       DOCKER_FILE: docker/base.Dockerfile
-    secrets:
-      DOCKERHUB_USERNAME: ${{secrets.DOCKERHUB_USERNAME}}
-      DOCKERHUB_TOKEN: ${{secrets.DOCKERHUB_TOKEN}}
+    secrets: inherit
