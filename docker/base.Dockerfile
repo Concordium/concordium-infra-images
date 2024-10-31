@@ -35,12 +35,12 @@ RUN apt-get update && \
     && rm -rf /var/lib/apt/lists/*
 
 # Install protoc by version specified in environment.
-RUN curl -L "https://github.com/protocolbuffers/protobuf/releases/download/v${protoc_version}/protoc-${protoc_version}-linux-x86_64.zip" -o protoc.zip; \
+RUN curl -L https://github.com/protocolbuffers/protobuf/releases/download/v${protoc_version}/protoc-${protoc_version}-linux-x86_64.zip -o protoc.zip; \
     unzip protoc.zip bin/protoc -d /usr/; \
     rm protoc.zip
 
 # Install CMAKE version 3.25 and extract it to /usr/local
-RUN curl -L https://github.com/Kitware/CMake/releases/download/v${cmake_version}/cmake-${cmake_version}-linux-x86_64.tar.gz --output cmake-$cmake_version-linux-x86_64.tar.gz && \
+RUN curl -L https://github.com/Kitware/CMake/releases/download/v${cmake_version}/cmake-${cmake_version}-linux-x86_64.tar.gz --output cmake-${cmake_version}-linux-x86_64.tar.gz && \
     tar xf cmake-${cmake_version}-linux-x86_64.tar.gz -C /usr/local --strip-components=1
 
 # Install rust.
