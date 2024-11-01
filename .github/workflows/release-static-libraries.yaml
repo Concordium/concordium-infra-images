@@ -1,16 +1,14 @@
 on:
   push:
-    branches:
-      - ekw/SRE-1005/release-static-libraries
-#    tags:
-#      - static-libraries-*
+    tags:
+      - static-libraries-*
 
 
 
 jobs:
   release-base-image:
-#    if: ${{ startsWith(github.ref_name, '${{env.SERVICE_NAME}}') }}
-    uses: concordium/.github/.github/workflows/docker-release-workflow.yaml@ekw/reusable-workflow-fix
+    if: ${{ startsWith(github.ref_name, '${{env.SERVICE_NAME}}') }}
+    uses: concordium/.github/.github/workflows/docker-release-workflow.yaml@main
     with:
       SERVICE_NAME: "static-libraries"
       BUILD_ARGS: |
@@ -20,5 +18,5 @@ jobs:
         stack_version=2.13.1
         protoc_version=3.15.3
       DOCKER_FILE: docker/static-libraries.Dockerfile
-      VERSION: "1.2.3"
+      VERSION: "rust-1.73.0_ghc-9.6.4-test"
     secrets: inherit
