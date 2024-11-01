@@ -13,6 +13,8 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       SERVICE_NAME: ${{env.SERVICE_NAME}}
+    steps:
+      - run: echo "Outputting var"
   release-base-image:
     if: ${{ startsWith(github.ref_name, '${{env.SERVICE_NAME}}') }}
     uses: concordium/.github/.github/workflows/docker-release-workflow.yaml@main
