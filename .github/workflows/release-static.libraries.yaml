@@ -9,7 +9,7 @@ on:
 
 jobs:
   release-base-image:
-    if: ${{ startsWith(github.ref_name, '${{env.SERVICE_NAME}}') }}
+#    if: ${{ startsWith(github.ref_name, '${{env.SERVICE_NAME}}') }}
     uses: concordium/.github/.github/workflows/docker-release-workflow.yaml@ekw/workflow-templates
     with:
       SERVICE_NAME: "static-libraries"
