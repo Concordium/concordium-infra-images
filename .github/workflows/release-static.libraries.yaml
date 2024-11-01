@@ -5,7 +5,7 @@ on:
 #    tags:
 #      - static-libraries-*
 
-env:
+
 
 jobs:
   release-base-image:
