@@ -1,10 +1,11 @@
+ARG ubuntu_version
+
+FROM ubuntu:${ubuntu_version}
+
 ARG rust_version
 ARG ghc_version
 ARG stack_version
 ARG protoc_version
-ARG ubuntu_version
-
-FROM ubuntu:$ubuntu_version
 
 ENV RUST_VERSION=$rust_version
 ENV GHC_VERSION=$ghc_version

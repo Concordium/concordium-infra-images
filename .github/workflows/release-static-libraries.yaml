@@ -8,7 +8,7 @@ on:
 jobs:
   release-base-image:
 #    if: ${{ startsWith(github.ref_name, '${{env.SERVICE_NAME}}') }}
-    uses: concordium/.github/.github/workflows/docker-release-workflow.yaml@main
+    uses: concordium/.github/.github/workflows/docker-release-workflow.yaml@ekw/reusable-workflow-fix
     with:
       SERVICE_NAME: "static-libraries"
       BUILD_ARGS: |
