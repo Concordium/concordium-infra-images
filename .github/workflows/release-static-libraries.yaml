@@ -16,7 +16,7 @@ jobs:
     steps:
       - run: echo "Outputting var"
   release-base-image:
-    if: ${{ startsWith(github.ref_name, '${{env.SERVICE_NAME}}') }}
+    #if: ${{ startsWith(github.ref_name, '${{env.SERVICE_NAME}}') }}
     uses: concordium/.github/.github/workflows/docker-release-workflow.yaml@main
     with:
       SERVICE_NAME: ${{needs.output-var.outputs.SERVICE_NAME}}
