@@ -9,17 +9,11 @@ env:
   SERVICE_NAME: "static-libraries"
 
 jobs:
-  output-var:
-    runs-on: ubuntu-latest
-    outputs:
-      SERVICE_NAME: ${{env.SERVICE_NAME}}
-    steps:
-      - run: echo "Outputting var"
   release-base-image:
     #if: ${{ startsWith(github.ref_name, '${{env.SERVICE_NAME}}') }}
     uses: concordium/.github/.github/workflows/docker-release-workflow.yaml@ekw/test-branch
     with:
-      SERVICE_NAME: ${{needs.output-var.outputs.SERVICE_NAME}}
+      SERVICE_NAME: "static-libraries"
       BUILD_ARGS: |
         ubuntu_version=20.04
         rust_version=1.73.0
