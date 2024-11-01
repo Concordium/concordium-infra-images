@@ -1,16 +1,23 @@
 on:
   push:
+    branches:
+      - ekw/SRE-1005/release-static-libraries
     tags:
       - static-libraries-*
 
-
+env:
+  SERVICE_NAME: "static-libraries"
 
 jobs:
+  output-var:
+    runs-on: ubuntu-latest
+    outputs:
+      SERVICE_NAME: ${{env.SERVICE_NAME}}
   release-base-image:
     if: ${{ startsWith(github.ref_name, '${{env.SERVICE_NAME}}') }}
     uses: concordium/.github/.github/workflows/docker-release-workflow.yaml@main
     with:
-      SERVICE_NAME: "static-libraries"
+      SERVICE_NAME: ${{needs.output-var.outputs.SERVICE_NAME}}
       BUILD_ARGS: |
         ubuntu_version=20.04
         rust_version=1.73.0
