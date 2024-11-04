@@ -1,13 +1,11 @@
 on:
   push:
-    branches:
-      - ekw/SRE-1005/release-static-libraries
     tags:
       - static-libraries/*
 
 jobs:
   release-base-image:
-    uses: concordium/.github/.github/workflows/docker-release-workflow.yaml@ekw/reusable-workflows/tag-format
+    uses: concordium/.github/.github/workflows/docker-release-workflow.yaml@main
     with:
       SERVICE_NAME: "static-libraries"
       BUILD_ARGS: |
