@@ -9,11 +9,11 @@ jobs:
     with:
       SERVICE_NAME: "static-libraries"
       BUILD_ARGS: |
-        ubuntu_version=20.04
-        rust_version=1.73.0
-        ghc_version=9.6.4
-        stack_version=2.13.1
-        protoc_version=3.15.3
+        UBUNTU_VERSION=20.04
+        RUST_VERSION=1.73.0
+        GHC_VERSION=9.6.4
+        STACK_VERSION=2.13.1
+        PROTOC_VERSION=3.15.3
       DOCKER_FILE: docker/static-libraries.Dockerfile
       VERSION: "rust-1.73.0_ghc-9.6.4"
     secrets: inherit
