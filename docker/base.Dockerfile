@@ -1,6 +1,6 @@
 ARG GHC_VERSION
 
-FROM haskell:${ghc_version}-buster
+FROM haskell:${GHC_VERSION}-buster
 
 ARG FLATBUFFERS_TAG
 ARG RUST_VERSION
