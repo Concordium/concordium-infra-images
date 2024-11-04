@@ -1,13 +1,11 @@
 on:
   push:
-    branches:
-      - ekw/refactor-base-image
     tags:
       - base/*
 
 jobs:
   release-base-image:
-    uses: concordium/.github/.github/workflows/docker-release-workflow.yaml@ekw/test-branch
+    uses: concordium/.github/.github/workflows/docker-release-workflow.yaml@main
     with:
       SERVICE_NAME: "base"
       BUILD_ARGS: |
@@ -18,5 +16,5 @@ jobs:
         nvm_sh_version=v0.37.2
         cmake_version=3.25.1
       DOCKER_FILE: docker/base.Dockerfile
-      VERSION: "rust1.73-ghc9.6.4-tester"
+      VERSION: "rust1.73-ghc9.6.4"
     secrets: inherit
