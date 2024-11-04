@@ -1,7 +1,5 @@
 on:
   push:
-    branches:
-      - ekw/SRE-1005/release-static-libraries
     tags:
       - static-libraries-*
 
@@ -10,8 +8,8 @@ env:
 
 jobs:
   release-base-image:
-    #if: ${{ startsWith(github.ref_name, '${{env.SERVICE_NAME}}') }}
-    uses: concordium/.github/.github/workflows/docker-release-workflow.yaml@ekw/test-branch
+    if: ${{ startsWith(github.ref_name, '${{env.SERVICE_NAME}}') }}
+    uses: concordium/.github/.github/workflows/docker-release-workflow.yaml@main
     with:
       SERVICE_NAME: "static-libraries"
       BUILD_ARGS: |
