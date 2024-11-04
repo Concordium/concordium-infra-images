@@ -18,5 +18,5 @@ jobs:
         nvm_sh_version=v0.37.2
         cmake_version=3.25.1
       DOCKER_FILE: docker/base.Dockerfile
-      VERSION: "rust1.73-ghc9.6.4"
+      VERSION: "rust1.73-ghc9.6.4-tester"
     secrets: inherit
