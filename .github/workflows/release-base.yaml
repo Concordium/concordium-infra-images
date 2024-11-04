@@ -5,7 +5,7 @@ on:
 
 jobs:
   release-base-image:
-    uses: concordium/.github/.github/workflows/docker-release-workflow.yaml@main
+    uses: concordium/.github/.github/workflows/docker-release-workflow.yaml@ekw/test-branch
     with:
       SERVICE_NAME: "base"
       BUILD_ARGS: |
