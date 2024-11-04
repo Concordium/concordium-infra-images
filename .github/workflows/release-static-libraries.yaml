@@ -3,17 +3,13 @@ on:
     branches:
       - ekw/SRE-1005/release-static-libraries
     tags:
-      - static-libraries*
-
-env:
-  SERVICE_NAME: "static-libraries"
+      - static-libraries/*
 
 jobs:
   release-base-image:
-#    if: ${{ startsWith(github.ref_name, '${{env.SERVICE_NAME}}') }}
-    uses: concordium/.github/.github/workflows/docker-release-workflow.yaml@main
+    uses: concordium/.github/.github/workflows/docker-release-workflow.yaml@ekw/reusable-workflows/tag-format
     with:
-      SERVICE_NAME: ${{env.SERVICE_NAME}}
+      SERVICE_NAME: "static-libraries"
       BUILD_ARGS: |
         ubuntu_version=20.04
         rust_version=1.73.0
