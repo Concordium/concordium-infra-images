@@ -1,6 +1,6 @@
-ARG ubuntu_version
+ARG UBUNTU_VERSION
 
-FROM ubuntu:${ubuntu_version}
+FROM ubuntu:${UBUNTU_VERSION}
 
 ARG RUST_VERSION
 ARG GHC_VERSION
