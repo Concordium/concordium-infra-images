@@ -7,11 +7,6 @@ ARG ghc_version
 ARG stack_version
 ARG protoc_version
 
-ENV RUST_VERSION=$rust_version
-ENV GHC_VERSION=$ghc_version
-ENV STACK_VERSION=$stack_version
-ENV PROTOC_VERSION=$protoc_version
-
 ENV DEBIAN_FRONTEND=noninteractive
 ENV PATH="${PATH}:/root/.cargo/bin:/root/.stack/bin"
 
@@ -33,7 +28,7 @@ RUN set -eux && \
     && rm -rf /var/lib/apt/lists/*
 
 # Install protoc by version specified in environment.
-RUN curl -L https://github.com/protocolbuffers/protobuf/releases/download/v${PROTOC_VERSION}/protoc-${PROTOC_VERSION}-linux-x86_64.zip -o protoc.zip; \
+RUN curl -L https://github.com/protocolbuffers/protobuf/releases/download/v${protoc_version}/protoc-${protoc_version}-linux-x86_64.zip -o protoc.zip; \
     unzip protoc.zip bin/protoc -d /usr/; \
     rm protoc.zip
 
@@ -42,17 +37,17 @@ RUN curl https://sh.rustup.rs -sSf | sh -s -- --profile minimal --default-toolch
     curl https://s3-eu-west-1.amazonaws.com/static-libraries.concordium.com/ghc-${ghc_version}-fpic-gmp-x86_64-unknown-linux-gnu.tar.gz -o ghc.tar.gz; \
     tar -xf ghc.tar.gz; \
     cp -r bootstrapped_out/* /; \
-    rm -r bootstrapped_out ghc.tar.gz; \
+    rm -r bootstrapped_out ghc.tar.gz;
     # install stack@$stack_version
-    curl -L https://github.com/commercialhaskell/stack/releases/download/v${stack_version}/stack-${stack_version}-linux-x86_64.tar.gz -o stack.tar.gz; \
+RUN curl -L https://github.com/commercialhaskell/stack/releases/download/v${stack_version}/stack-${stack_version}-linux-x86_64.tar.gz -o stack.tar.gz; \
     tar -xf stack.tar.gz; \
     mkdir -p $HOME/.stack/bin;\
     mv stack-${stack_version}-linux-x86_64/stack $HOME/.stack/bin; \
     echo "system-ghc: true" > ~/.stack/config.yaml; \
     rm -rf stack.tar.gz; \
-    stack update; \
+    stack update;
     # check
-    cargo --version; \
+RUN cargo --version; \
     rustup --version; \
     rustc --version; \
     ghc --version; \
