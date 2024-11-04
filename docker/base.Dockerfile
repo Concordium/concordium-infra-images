@@ -2,11 +2,11 @@ ARG ghc_version
 
 FROM haskell:${ghc_version}-buster
 
-ARG flatbuffers_tag
-ARG rust_version
-ARG protoc_version
-ARG nvm_sh_version
-ARG cmake_version
+ARG FLATBUFFERS_TAG
+ARG RUST_VERSION
+ARG PROTOC_VERSION
+ARG NVM_SH_VERSION
+ARG CMAKE_VERSION
 
 
 

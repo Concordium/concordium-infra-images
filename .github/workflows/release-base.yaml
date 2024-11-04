@@ -9,12 +9,12 @@ jobs:
     with:
       SERVICE_NAME: "base"
       BUILD_ARGS: |
-        rust_version=1.73.0
-        ghc_version=9.6.4
-        protoc_version=3.15.3
-        flatbuffers_tag=v22.12.06
-        nvm_sh_version=v0.37.2
-        cmake_version=3.25.1
+        RUST_VERSION=1.73.0
+        GHC_VERSION=9.6.4
+        PROTOC_VERSION=3.15.3
+        FLATBUFFERS_TAG=v22.12.06
+        NVM_SH_VERSION=v0.37.2
+        CMAKE_VERSION=3.25.1
       DOCKER_FILE: docker/base.Dockerfile
       VERSION: "rust1.73-ghc9.6.4"
     secrets: inherit
