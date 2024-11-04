@@ -4,7 +4,7 @@ on:
       - static-libraries/*
 
 jobs:
-  release-base-image:
+  release-static-libraries-image:
     uses: concordium/.github/.github/workflows/docker-release-workflow.yaml@main
     with:
       SERVICE_NAME: "static-libraries"
