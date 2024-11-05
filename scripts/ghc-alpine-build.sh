@@ -18,4 +18,4 @@ mkdir _build/docs
 # Copy ghc to out
 ls _build
 ls _build/bindist
-cp _build/bindist/ghc-"$GHC_VERSION"-x86_64-unknown-linux.tar.xz /build/dpkg-build-package/ghc-"$GHC_VERSION"-x86_64-unknown-linux-integer-gmp.tar.xz
+cp _build/bindist/ghc-"$GHC_VERSION"-x86_64-unknown-linux.tar.xz /build/pkg-root/ghc-"$GHC_VERSION"-x86_64-unknown-linux-integer-gmp.tar.xz
