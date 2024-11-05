@@ -5,7 +5,7 @@ set -ex
 . "$HOME/.ghcup/env"
 
 cd ghc/
-cabal install happy-1.20 alex --install-method=copy
+cabal install happy alex --install-method=copy --constraint 'happy < 1.20'
 cp ~/.cabal/bin/* /usr/bin
 
 # Build GHC
