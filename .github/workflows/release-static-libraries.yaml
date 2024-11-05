@@ -15,5 +15,4 @@ jobs:
         STACK_VERSION=2.13.1
         PROTOC_VERSION=3.15.3
       DOCKER_FILE: docker/static-libraries.Dockerfile
-      VERSION: "rust-1.73.0_ghc-9.6.4"
     secrets: inherit
