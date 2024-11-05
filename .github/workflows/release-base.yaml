@@ -15,6 +15,5 @@ jobs:
         FLATBUFFERS_TAG=v22.12.06
         NVM_SH_VERSION=v0.37.2
         CMAKE_VERSION=3.25.1
-      DOCKER_FILE: docker/base.Dockerfile
-      VERSION: "rust1.73-ghc9.6.4"
+      DOCKER_FILE_PATH: docker/base.Dockerfile
     secrets: inherit
