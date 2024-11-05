@@ -1,0 +1,17 @@
+on:
+  push:
+    branches:
+      - ekw/SRE-996/release-ghc-alpine
+    tags:
+      - ghc-alpine/*
+
+jobs:
+  release-ghc-alpine:
+    uses: concordium/.github/.github/workflows/s3-release-workflow.yaml@ekw/SRE-996/s3-artifact
+    with:
+      SERVICE_NAME: "ghc-alpine"
+      BUILD_ARGS: --build-arg BOOTSTRAP_HASKELL_GHC_VERSION="9.4.6" --build-arg GHC_VERSION="9.4.6"
+      DOCKER_FILE: docker/ghc-alpine.Dockerfile
+      FILE_NAME: "ghc-9.2.5-x86_64-unknown-linux-integer-gmp.tar.xz"
+      BUCKET: "s3://static-libraries.concordium.com"
+      IAM_ROLE: "arn:aws:iam::192549843005:role/github_ghc-alpine"
