@@ -1,11 +1,12 @@
 on:
   push:
+    branches: []
     tags:
       - static-libraries/*
 
 jobs:
   release-static-libraries-image:
-    uses: concordium/.github/.github/workflows/docker-release-workflow.yaml@main
+    uses: concordium/.github/.github/workflows/docker-release-workflow.yaml@lma/file_version
     with:
       SERVICE_NAME: "static-libraries"
       BUILD_ARGS: |
