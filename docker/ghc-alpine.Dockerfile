@@ -15,4 +15,4 @@ RUN git clone -b ghc-"$GHC_VERSION"-release https://gitlab.haskell.org/ghc/ghc.g
 
 COPY ../scripts/ghc-alpine-build.sh /ghc-alpine-build.sh
 RUN chmod +x /ghc-alpine-build.sh
-RUN ../scripts/ghc-alpine-build.sh
+RUN /ghc-alpine-build.sh
