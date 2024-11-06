@@ -9,7 +9,7 @@ jobs:
     with:
       SERVICE_NAME: "base"
       BUILD_ARGS: |
-        RUST_VERSION=1.73.0
+        RUST_VERSION=1.74.1
         GHC_VERSION=9.6.4
         PROTOC_VERSION=3.15.3
         FLATBUFFERS_TAG=v22.12.06
