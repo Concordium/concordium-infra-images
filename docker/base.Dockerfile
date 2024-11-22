@@ -13,7 +13,7 @@ ARG CMAKE_VERSION
 ENV LANG C.UTF-8
 
 RUN apt-get update && \
-apt-get install -y --no-install-recommends gnupg ca-certificates dirmngr musl-tools && \
+apt-get install -y --no-install-recommends gnupg ca-certificates dirmngr musl-tools unzip && \
 rm -rf /var/lib/apt/lists/*
 
 ENV PROTOC_VERSION=${PROTOC_VERSION}
@@ -37,8 +37,8 @@ RUN apt-get update && \
     && rm -rf /var/lib/apt/lists/*
 
 # Install protoc by version specified in environment.
-RUN curl -L https://github.com/protocolbuffers/protobuf/releases/download/v${PROTOC_VERSION}/protoc-${PROTOC_VERSION}-linux-x86_64.zip -o protoc.zip; \
-    unzip protoc.zip bin/protoc -d /usr/; \
+RUN curl -L https://github.com/protocolbuffers/protobuf/releases/download/v${PROTOC_VERSION}/protoc-${PROTOC_VERSION}-linux-x86_64.zip -o protoc.zip && \
+    unzip protoc.zip bin/protoc -d /usr/ && \
     rm protoc.zip
 
 # Install CMAKE version 3.25 and extract it to /usr/local
