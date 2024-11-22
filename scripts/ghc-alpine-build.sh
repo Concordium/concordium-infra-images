@@ -5,7 +5,7 @@ set -ex
 . "$HOME/.ghcup/env"
 
 cd ghc/
-cabal install happy-1.20.1.1 alex --install-method=copy
+cabal install happy alex --install-method=copy
 cp ~/.cabal/bin/* /usr/bin
 
 # Build GHC
@@ -18,4 +18,4 @@ mkdir _build/docs
 # Copy ghc to out
 ls _build
 ls _build/bindist
-cp _build/bindist/ghc-"$GHC_VERSION"-x86_64-unknown-linux.tar.xz /build/pkg-root/ghc-"$GHC_VERSION"-x86_64-unknown-linux-integer-gmp.tar.xz
+cp _build/bindist/ghc-"$GHC_VERSION"-x86_64-unknown-linux.tar.xz /out/ghc-"$GHC_VERSION"-x86_64-unknown-linux-integer-gmp.tar.xz

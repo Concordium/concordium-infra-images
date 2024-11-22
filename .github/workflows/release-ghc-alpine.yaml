@@ -1,17 +1,35 @@
 on:
   push:
-    branches:
-      - ekw/SRE-996/release-ghc-alpine
     tags:
-      - ghc-alpine/*
+      - fpic-ghc/*
+
+env:
+  AWS_ROLE_TO_ASSUME: "arn:aws:iam::192549843005:role/github_concordium-ghc"
+  GHC_VERSION: "9.6.6"
+  BOTTSTRAP_GHC_VERSION: "9.6.4"
+
+permissions:
+  id-token: write
+  contents: read
 
 jobs:
-  release-ghc-alpine:
-    uses: concordium/.github/.github/workflows/s3-release-workflow.yaml@ekw/SRE-996/s3-artifact
-    with:
-      SERVICE_NAME: "ghc-alpine"
-      BUILD_ARGS: --build-arg BOOTSTRAP_HASKELL_GHC_VERSION="9.4.6" --build-arg GHC_VERSION="9.4.6"
-      DOCKER_FILE: docker/ghc-alpine.Dockerfile
-      FILE_NAME: "ghc-9.4.6-x86_64-unknown-linux-integer-gmp.tar.xz"
-      BUCKET: "s3://static-libraries.concordium.com"
-      IAM_ROLE: "arn:aws:iam::192549843005:role/github_ghc-alpine"
+  release-fpic:
+    runs-on: ubuntu-latest
+    environment: release
+    steps:
+      
+      - name: aws creds
+        uses: aws-actions/configure-aws-credentials@v4
+        id: creds
+        with:
+          aws-region: "eu-west-1"
+          role-to-assume: ${{ env.AWS_ROLE_TO_ASSUME }}
+          role-session-name: ReleaseAlpineGhcSession
+      
+      - name: Build and push
+        run: |
+          # GHC_VERSION corresponds to the version of GHC that we are building.
+          # BOOTSTRAP_GHC_VERSION corresponds to the version of GHC that we are using to build GHC_VERSION.
+          GHC_VERSION="${{ env.GHC_VERSION }}" \
+          BOOTSTRAP_GHC_VERSION="${{ env.BOTTSTRAP_GHC_VERSION }}" \
+          ./fpic/linux-fpic-ghc-build-and-push.sh
