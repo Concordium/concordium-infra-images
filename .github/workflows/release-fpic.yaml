@@ -1,0 +1,37 @@
+on:
+  push:
+    tags:
+      - fpic-ghc/*
+
+env:
+  AWS_ROLE_TO_ASSUME: "arn:aws:iam::192549843005:role/github_concordium-ghc"
+  INTEGER_VARIANT: "gmp"
+  GHC_VERSION: "9.6.6"
+  BOTTSTRAP_GHC_VERSION: "9.6.4"
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  release-fpic:
+    runs-on: ubuntu-latest
+    environment: release
+    steps:
+      
+      - name: aws creds
+        uses: aws-actions/configure-aws-credentials@v4
+        id: creds
+        with:
+          aws-region: "eu-west-1"
+          role-to-assume: ${{ env.AWS_ROLE_TO_ASSUME }}
+          role-session-name: ReleaseFpicGhcSession
+      
+      - name: Build and push
+        run: |
+          # GHC_VERSION corresponds to the version of GHC that we are building.
+          # BOOTSTRAP_GHC_VERSION corresponds to the version of GHC that we are using to build GHC_VERSION.
+          INTEGER_VARIANT="${{ env.INTEGER_VARIANT }}" \
+          GHC_VERSION="${{ env.GHC_VERSION }}" \
+          BOOTSTRAP_GHC_VERSION="${{ env.BOTTSTRAP_GHC_VERSION }}" \
+          ./fpic/linux-fpic-ghc-build-and-push.sh
