@@ -1,7 +1,5 @@
 on:
   push:
-    branches:
-      - ekw/SRE-996/release-ghc-alpine
     tags:
       - fpic-ghc/*
 
