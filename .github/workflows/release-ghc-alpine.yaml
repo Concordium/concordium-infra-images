@@ -1,5 +1,7 @@
 on:
   push:
+    branches:
+      - ekw/SRE-996/release-ghc-alpine
     tags:
       - fpic-ghc/*
 
@@ -32,4 +34,4 @@ jobs:
           # BOOTSTRAP_GHC_VERSION corresponds to the version of GHC that we are using to build GHC_VERSION.
           GHC_VERSION="${{ env.GHC_VERSION }}" \
           BOOTSTRAP_GHC_VERSION="${{ env.BOTTSTRAP_GHC_VERSION }}" \
-          ./fpic/linux-fpic-ghc-build-and-push.sh
+          ./scripts/ghc-alpine-build.sh
