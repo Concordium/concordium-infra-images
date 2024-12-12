@@ -65,7 +65,7 @@ jobs:
           echo "MATRIX_JSON=${MATRIX_JSON}" >> $GITHUB_ENV
 
       - name: Release candidate environments
-        if: inputs.release_type == 'rc'
+        if: ${{ env.RELEASE_TYPE }} == 'rc'
         run: |
           MATRIX_JSON=$(echo "$MATRIX_JSON" | jq -c '. + [
             {
@@ -149,14 +149,15 @@ jobs:
         role-to-assume: ${{ env.AWS_ROLE_ARN }}
         role-session-name: ReleaseConcordiumNodeImageSession
     - name: Download file from S3
-      run: aws s3 cp s3://distribution.${{ matrix.env }}.concordium.${{ matrix.tld }}/deb/concordium-${{ matrix.env }}-node_${{  }}_amd64.deb ./concordium-node.deb
+      run: |
+        aws s3 cp s3://distribution.${{ matrix.env }}.concordium.${{ matrix.tld }}/deb/concordium-${{ matrix.env }}-node_${{ env.CONCORDIUM_NODE_VERSION }}_amd64.deb ./concordium-node.deb
     - name: Setup image name
       run: |
         if [ "${{ matrix.cloud_provider }}" == "aws" ]; then
-          echo "IMAGE_NAME=${{ matrix.env }}-${{ env.CONCORDIUM_NODE_VERSION }}-concordium-node-${{ inputs.observability_version }}-x86_64" >> $GITHUB_ENV
+          echo "IMAGE_NAME=${{ matrix.env }}-${{ env.CONCORDIUM_NODE_VERSION }}-concordium-node-${{ env.OBSERVABILITY_VERSION }}-x86_64" >> $GITHUB_ENV
         elif [ "${{ matrix.cloud_provider }}" == "gcp" ]; then
           VERSION_TRANSFORMED=${CONCORDIUM_NODE_VERSION//./-}
-          echo "IMAGE_NAME=${{ matrix.env }}-v$VERSION_TRANSFORMED-concordium-node-${{ inputs.observability_version }}-x86-64" >> $GITHUB_ENV
+          echo "IMAGE_NAME=${{ matrix.env }}-v$VERSION_TRANSFORMED-concordium-node-${{ env.OBSERVABILITY_VERSION }}-x86-64" >> $GITHUB_ENV
         else
           echo "Unknown cloud provider: ${{ matrix.cloud_provider }}"
           exit 1
@@ -175,9 +176,9 @@ jobs:
       if: ${{ env.IMAGE_ID == '' }}
       run: |
         if [ "${{ matrix.cloud_provider }}" == "aws" ]; then
-          SOURCE_IMAGE_ID=$(aws ec2 describe-images --filters Name=name,Values=concordium-observability-node-${{ inputs.observability_version }}-x86_64 --query 'Images[*].ImageId' --output text)
+          SOURCE_IMAGE_ID=$(aws ec2 describe-images --filters Name=name,Values=concordium-observability-node-${{ env.OBSERVABILITY_VERSION }}-x86_64 --query 'Images[*].ImageId' --output text)
         elif [ "${{ matrix.cloud_provider }}" == "gcp" ]; then
-          SOURCE_IMAGE_ID=$(gcloud compute images list --project="concordium-mgmt-0" --filter="name=(concordium-observability-node-${{ inputs.observability_version }}-x86-64)" --format="value(name)")
+          SOURCE_IMAGE_ID=$(gcloud compute images list --project="concordium-mgmt-0" --filter="name=(concordium-observability-node-${{ env.OBSERVABILITY_VERSION }}-x86-64)" --format="value(name)")
         else
           echo "Unknown cloud provider: ${{ matrix.cloud_provider }}"
           exit 1
