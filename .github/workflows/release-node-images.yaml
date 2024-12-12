@@ -1,6 +1,9 @@
 name: Create and upload packer generated images
 
 on:
+  push:
+    branches:
+      - lma/release/tags
   workflow_dispatch:
     inputs:
       node_version:
@@ -14,10 +17,10 @@ on:
         options:
           - alpha
           - rc
-      observability_version:
-        description: "The version for observability image. Only present for rollback functionality"
-        required: false
-        type: string
+#      observability_version:
+#        description: "The version for observability image. Only present for rollback functionality"
+#        required: false
+#        type: string
 
 
 env:
@@ -25,6 +28,11 @@ env:
   AWS_ROLE_ARN: "arn:aws:iam::192549843005:role/github-devops-cd"
   IMAGE_COUNT_UPPER_LIMIT: 20
   IMAGE_COUNT_LOWER_LIMIT: 10
+#  CONCORDIUM_NODE_VERSION: ${{ inputs.node_version }}
+  CONCORDIUM_NODE_VERSION: 7.0.6-5
+#  RELEASE_TYPE: ${{ inputs.release_type }}
+  RELEASE_TYPE: alpha
+
 
 permissions:
   id-token: write
@@ -141,14 +149,14 @@ jobs:
         role-to-assume: ${{ env.AWS_ROLE_ARN }}
         role-session-name: ReleaseConcordiumNodeImageSession
     - name: Download file from S3
-      run: aws s3 cp s3://distribution.${{ matrix.env }}.concordium.${{ matrix.tld }}/deb/concordium-${{ matrix.env }}-node_${{ env.CONCORDIUM_NODE_VERSION }}_amd64.deb ./concordium-node.deb
+      run: aws s3 cp s3://distribution.${{ matrix.env }}.concordium.${{ matrix.tld }}/deb/concordium-${{ matrix.env }}-node_${{  }}_amd64.deb ./concordium-node.deb
     - name: Setup image name
       run: |
         if [ "${{ matrix.cloud_provider }}" == "aws" ]; then
-          echo "IMAGE_NAME=${{ matrix.env }}-${{ env.CONCORDIUM_NODE_VERSION }}-concordium-node-${{ env.OBSERVABILITY_VERSION }}-x86_64" >> $GITHUB_ENV
+          echo "IMAGE_NAME=${{ matrix.env }}-${{ env.CONCORDIUM_NODE_VERSION }}-concordium-node-${{ inputs.observability_version }}-x86_64" >> $GITHUB_ENV
         elif [ "${{ matrix.cloud_provider }}" == "gcp" ]; then
           VERSION_TRANSFORMED=${CONCORDIUM_NODE_VERSION//./-}
-          echo "IMAGE_NAME=${{ matrix.env }}-v$VERSION_TRANSFORMED-concordium-node-${{ env.OBSERVABILITY_VERSION }}-x86-64" >> $GITHUB_ENV
+          echo "IMAGE_NAME=${{ matrix.env }}-v$VERSION_TRANSFORMED-concordium-node-${{ inputs.observability_version }}-x86-64" >> $GITHUB_ENV
         else
           echo "Unknown cloud provider: ${{ matrix.cloud_provider }}"
           exit 1
