@@ -3,7 +3,7 @@ name: Create and upload packer generated images
 on:
   push:
     branches:
-      - 'main'
+      - 'lma/release/tags'
 env:
   PACKER_VERSION: "latest"
   AWS_ROLE_ARN: "arn:aws:iam::192549843005:role/github-devops-cd"
