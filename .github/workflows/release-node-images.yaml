@@ -12,8 +12,6 @@ env:
   IMAGE_COUNT_UPPER_LIMIT: 20
   IMAGE_COUNT_LOWER_LIMIT: 10
   PROJECT_NAME: ConcordiumNode
-  ENVIRONMENT_TO_AWS_REGION: '{"stagenet":"eu-west-1", "testnet":"eu-central-1", "mainnet":"eu-central-1", "flynet":"eu-west-1"}'
-  REGION_TO_SUBNET: '{"eu-west-1": "subnet-0420e07bd378fc8ef", "eu-central-1": "subnet-018c28ad04a57702e" }'
   NODE_VERSION: 'node/7.0.6-5-alpha'
 
 permissions:
