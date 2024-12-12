@@ -1,0 +1,101 @@
+name: Create and upload packer generated images
+
+on:
+  push:
+    branches:
+      - 'main'
+env:
+  PACKER_VERSION: "latest"
+  AWS_ROLE_ARN: "arn:aws:iam::192549843005:role/github-devops-cd"
+  PROJECT_NAME: ConcordiumNode
+  REGION_TO_SUBNET: '{"eu-west-1": "subnet-0420e07bd378fc8ef", "eu-central-1": "subnet-018c28ad04a57702e" }'
+
+permissions:
+  id-token: write
+  contents: read
+jobs:
+
+  release-observability-image:
+    runs-on: ubuntu-latest
+    environment: release-images
+    strategy:
+      matrix:
+        cloud_provider: ['gcp', 'aws']
+    defaults:
+      run:
+        working-directory: ./packer
+    outputs:
+      image_id_gcp: ${{ steps.image_id.outputs.image_id_gcp }}
+      image_name_gcp: ${{ steps.image_name.outputs.image_name_gcp }}
+      image_id_aws: ${{ steps.image_id.outputs.image_id_aws }}
+      image_name_aws: ${{ steps.image_name.outputs.image_name_aws }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Load common variables
+        run: cat .github/shared-variables/.env >> $GITHUB_ENV
+
+      - name: Configure Cloud Credentials
+        if: matrix.cloud_provider == 'gcp'
+        uses: google-github-actions/auth@v2
+        with:
+          project_id: concordium-mgmt-0
+          workload_identity_provider: projects/761241104197/locations/global/workloadIdentityPools/github/providers/concordium
+          service_account: github-devops-cd@concordium-mgmt-0.iam.gserviceaccount.com
+
+      - name: Configure AWS Credentials
+        if: matrix.cloud_provider == 'aws'
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: ${{ env.OBSERVABILITY_AWS_REGION }}
+          role-to-assume: ${{ env.AWS_ROLE_ARN }}
+          role-session-name: ReleaseObservabilityImageSession
+
+      - name: Setup Packer
+        uses: hashicorp/setup-packer@main
+        id: setup
+        with:
+          version: ${{ env.PACKER_VERSION }}
+
+      - name: Initialize Packer
+        run: packer init observability
+
+      - name: Determine Image Name
+        run: echo "IMAGE_NAME=concordium-observability-node-${{ env.OBSERVABILITY_VERSION }}-${{ matrix.cloud_provider == 'gcp' && 'x86-64' || 'x86_64' }}" >> $GITHUB_ENV
+
+      - name: Check if Image Already Exists
+        run: |
+          if [ "${{ matrix.cloud_provider }}" == "gcp" ]; then
+            IMAGE_ID=$(gcloud compute images list --project="concordium-mgmt-0" --filter="name=(${IMAGE_NAME})" --format="value(name)")
+          elif [ "${{ matrix.cloud_provider }}" == "aws" ]; then
+            IMAGE_ID=$(aws ec2 describe-images --filters Name=name,Values=$IMAGE_NAME --query 'Images[*].ImageId' --output text)
+          else
+            echo "Unknown cloud provider: ${{ matrix.cloud_provider }}"
+            exit 1
+          fi
+          echo "IMAGE_ID=$IMAGE_ID" >> $GITHUB_ENV
+
+      - name: Setup subnet id
+        if: ${{ matrix.cloud_provider == 'aws' }}
+        run: |
+          VALUE=$(echo '${{ env.REGION_TO_SUBNET }}' | jq -r --arg key "${{ env.OBSERVABILITY_AWS_REGION }}" '.[$key]')
+          if [[ $VALUE == "null" ]]; then
+            echo  "Key '${{ env.AWS_ENVIRONMENT_REGION }}' not found in ${{ env.REGION_TO_SUBNET }}"
+            exit 1
+          fi
+          echo "AWS_SUBNET_ID=$VALUE" >> $GITHUB_ENV
+
+      - name: Set variables
+        if: ${{ env.IMAGE_ID == '' }}
+        run: |
+          export AMI_USERS='["727113945353"]'
+          export CLOUD_PROVIDER=${{ matrix.cloud_provider }}
+          export TARGET_AWS_REGIONS=$(echo '${{ env.ENVIRONMENT_TO_AWS_REGION }}' | jq -r -c --arg region "$AWS_REGION" '[..|strings]|unique | map(select(. != $region))')
+          envsubst < observability/variables.pkrvars.hcl.template > variables.pkrvars.hcl
+
+      - name: Build Image
+        if: ${{ env.IMAGE_ID == '' }}
+        run: |
+          set -eo pipefail
+          packer build -machine-readable -var-file=./variables.pkrvars.hcl observability | tee build-output.log
