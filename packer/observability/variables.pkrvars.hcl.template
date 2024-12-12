@@ -1,0 +1,8 @@
+target_aws_regions=$TARGET_AWS_REGIONS
+cloud_provider="$CLOUD_PROVIDER"
+project_name="$PROJECT_NAME"
+aws_region="$AWS_REGION"
+ami_name="$IMAGE_NAME"
+subnet_id="$AWS_SUBNET_ID"
+ami_users=$AMI_USERS
+
