@@ -3,11 +3,10 @@ name: Create and upload packer generated images
 on:
   push:
     branches:
-      - 'lma/release/tags'
+      - 'main'
 env:
   PACKER_VERSION: "latest"
   AWS_ROLE_ARN: "arn:aws:iam::192549843005:role/github-devops-cd"
-  PROJECT_NAME: ConcordiumNode
 
 permissions:
   id-token: write
