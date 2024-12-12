@@ -49,17 +49,17 @@ jobs:
             {
               "env": "stagenet",
               "tld": "com",
-              "cloud_provider": "aws",
+              "cloud_provider": "aws"
             },
             {
               "env": "flynet",
               "tld": "com",
-              "cloud_provider": "aws",
+              "cloud_provider": "aws"
             },
             {
               "env": "stagenet",
               "tld": "com",
-              "cloud_provider": "gcp",
+              "cloud_provider": "gcp"
             }
           ]' | jq -c)
           echo "MATRIX_JSON=${MATRIX_JSON}" >> $GITHUB_ENV
