@@ -107,7 +107,7 @@ jobs:
 #      image_name_aws_mainnet: ${{ steps.image_name.outputs.image_name_aws_mainnet }}
       image_name_aws_flynet: ${{ steps.image_name.outputs.image_name_aws_flynet }}
     needs: [generate-matrix]
-    environment: release-images
+    environment: release-node-images
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
