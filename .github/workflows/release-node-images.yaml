@@ -24,8 +24,10 @@ env:
   AWS_ROLE_ARN: "arn:aws:iam::192549843005:role/github-devops-cd"
   IMAGE_COUNT_UPPER_LIMIT: 20
   IMAGE_COUNT_LOWER_LIMIT: 10
-  CONCORDIUM_NODE_VERSION: ${{ inputs.node_version }}
-  RELEASE_TYPE: ${{ inputs.release_type }}
+#  CONCORDIUM_NODE_VERSION: ${{ inputs.node_version }}
+  CONCORDIUM_NODE_VERSION: 7.0.6-5
+#  RELEASE_TYPE: ${{ inputs.release_type }}
+  RELEASE_TYPE: alpha
 
 permissions:
   id-token: write
@@ -89,30 +91,6 @@ jobs:
         id: set-matrix
         run: echo "matrix=$MATRIX_JSON" >> $GITHUB_OUTPUT
 
-  remote-git-changes:
-    runs-on: ubuntu-latest
-    outputs:
-      matrix: ${{ steps.set-matrix.outputs.matrix }}
-    steps:
-      - uses: actions/create-github-app-token@v1
-        id: app-token
-        with:
-          app-id: 1086655
-          private-key: ${{ secrets.APP_PRIVATE_KEY }}
-
-      - name: Checkout Code
-        uses: actions/checkout@v4
-        with:
-          token: ${{ steps.app-token.outputs.token }}
-
-      - name: Commit and Push Changes
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "ops@concordium.com"
-          git tag node/${{ env.CONCORDIUM_NODE_VERSION }}
-          git push origin --follow-tags
-          
-
   release-concordium-node-image:
     outputs:
       image_name_gcp_stagenet: ${{ steps.image_name.outputs.image_name_gcp_stagenet }}
@@ -122,7 +100,7 @@ jobs:
       image_name_aws_testnet: ${{ steps.image_name.outputs.image_name_aws_testnet }}
       image_name_aws_mainnet: ${{ steps.image_name.outputs.image_name_aws_mainnet }}
       image_name_aws_flynet: ${{ steps.image_name.outputs.image_name_aws_flynet }}
-    needs: [generate-matrix, remote-git-changes]
+    needs: [generate-matrix]
     environment: release-node-images
     runs-on: ubuntu-latest
     strategy:
@@ -229,6 +207,28 @@ jobs:
         id: image_name
         run: |
           echo "image_name_${{ matrix.cloud_provider }}_${{ matrix.env }}=$IMAGE_NAME" >> $GITHUB_OUTPUT
+
+  remote-git-changes:
+    runs-on: ubuntu-latest
+    needs: [release-concordium-node-image]
+    steps:
+      - uses: actions/create-github-app-token@v1
+        id: app-token
+        with:
+          app-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+
+      - name: Commit and Push Changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "ops@concordium.com"
+          git tag node/${{ env.CONCORDIUM_NODE_VERSION }}
+          git push origin --follow-tags
 
   notify-slack-changes:
     needs: [release-concordium-node-image]

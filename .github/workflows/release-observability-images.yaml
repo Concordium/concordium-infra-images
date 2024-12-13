@@ -2,34 +2,30 @@ name: Create and upload packer generated images
 
 
 on:
+  push:
+    branches:
+      - "lma/release/tags"
   workflow_dispatch:
 env:
   PACKER_VERSION: "latest"
   AWS_ROLE_ARN: "arn:aws:iam::192549843005:role/github-devops-cd"
+
 
 permissions:
   id-token: write
   contents: read
 jobs:
 
-  update-observability-version:
+  get-observability-version:
     runs-on: ubuntu-latest
     environment: release-node-images
+    outputs:
+      observability_version: steps.observability.outputs.version
     env:
       ENV_FILE_PATH: .github/shared-variables/.env
     steps:
-      - uses: actions/create-github-app-token@v1
-        id: app-token
-        with:
-          app-id: 1086655
-          private-key: ${{ secrets.APP_PRIVATE_KEY }}
-
-      - name: Checkout Code
-        uses: actions/checkout@v4
-        with:
-          token: ${{ steps.app-token.outputs.token }}
-
       - name: Load and Increment OBSERVABILITY_VERSION
+        id: observability
         run: |
           if [ ! -f  ${{ env.ENV_FILE_PATH }} ]; then
             echo "::error::${{ env.ENV_FILE_PATH }} file not found!"
@@ -41,22 +37,14 @@ jobs:
             exit 1
           fi
           NEW_VERSION=$(printf "%05d" $((10#$OBSERVABILITY_VERSION + 1)))
-          sed -i "s/^OBSERVABILITY_VERSION=.*/OBSERVABILITY_VERSION=${NEW_VERSION}/" ${{ env.ENV_FILE_PATH }}
-          echo "::notice::OBSERVABILITY_VERSION=${NEW_VERSION}"
-          echo "OBSERVABILITY_VERSION=${NEW_VERSION}" >> $GITHUB_ENV
-
-      - name: Commit and Push Changes
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "ops@concordium.com"
-          git commit -am "Increment OBSERVABILITY_VERSION to ${NEW_VERSION}"
-          git tag observability/${{ env.OBSERVABILITY_VERSION }}
-          git push origin HEAD --follow-tags
+          echo "version=${NEW_VERSION}" >> $GITHUB_OUTPUT
 
   release-observability-image:
     runs-on: ubuntu-latest
     environment: release-node-images
-    needs: [update-observability-version]
+    needs: [get-observability-version]
+    env:
+      OBSERVABILITY_VERSION: ${{ needs.get-observability-version.outputs.observability_version }}
     strategy:
       matrix:
         cloud_provider: ['gcp', 'aws']
@@ -64,7 +52,7 @@ jobs:
       run:
         working-directory: ./packer
     steps:
-      - name: Checkout
+      - name: Checkout Code
         uses: actions/checkout@v4
 
       - name: Load common variables
@@ -133,3 +121,32 @@ jobs:
         run: |
           set -eo pipefail
           packer build -machine-readable -var-file=./variables.pkrvars.hcl observability | tee build-output.log
+
+  remote-git-changes:
+    runs-on: ubuntu-latest
+    needs: [release-concordium-node-image, get-observability-version]
+    steps:
+      - uses: actions/create-github-app-token@v1
+        id: app-token
+        with:
+          app-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+
+      - name: Alter observability version
+        run: |
+          sed -i "s/^OBSERVABILITY_VERSION=.*/OBSERVABILITY_VERSION=${{ needs.get-observability-version.outputs.observability_version }}/" ${{ env.ENV_FILE_PATH }}
+          echo "::notice::OBSERVABILITY_VERSION=${{ needs.get-observability-version.outputs.observability_version }}"
+          echo "OBSERVABILITY_VERSION=${{ needs.get-observability-version.outputs.observability_version }}" >> $GITHUB_ENV
+
+      - name: Commit and Push Changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "ops@concordium.com"
+          git commit -am "Increment OBSERVABILITY_VERSION to ${{ needs.get-observability-version.outputs.observability_version }}"
+          git tag observability/${{ needs.get-observability-version.outputs.observability_version }}
+          git push origin HEAD --follow-tags
