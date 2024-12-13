@@ -288,7 +288,7 @@ jobs:
 
   notify-slack-on-failure:
     needs: [release-concordium-node-image]
-    environment: release-images
+    environment: release-node-images
     runs-on: ubuntu-latest
     if: ${{ failure() }}
     steps:
