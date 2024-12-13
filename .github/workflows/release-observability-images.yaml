@@ -35,7 +35,7 @@ jobs:
           fi
           NEW_VERSION=$(printf "%05d" $((10#$OBSERVABILITY_VERSION + 1)))
           sed -i "s/^OBSERVABILITY_VERSION=.*/OBSERVABILITY_VERSION=${NEW_VERSION}/" ${{ env.ENV_FILE_PATH }}
-          echo::notice::"OBSERVABILITY_VERSION=${NEW_VERSION}"
+          echo "::notice::OBSERVABILITY_VERSION=${NEW_VERSION}"
 
       - name: Commit and Push Changes
         env:
