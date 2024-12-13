@@ -1,10 +1,8 @@
 name: Create and upload packer generated images
 
+
 on:
-  push:
-    branches:
-      - 'main'
-      - 'lma/release/tags'
+  workflow_dispatch:
 env:
   PACKER_VERSION: "latest"
   AWS_ROLE_ARN: "arn:aws:iam::192549843005:role/github-devops-cd"
@@ -45,13 +43,15 @@ jobs:
           NEW_VERSION=$(printf "%05d" $((10#$OBSERVABILITY_VERSION + 1)))
           sed -i "s/^OBSERVABILITY_VERSION=.*/OBSERVABILITY_VERSION=${NEW_VERSION}/" ${{ env.ENV_FILE_PATH }}
           echo "::notice::OBSERVABILITY_VERSION=${NEW_VERSION}"
+          echo "OBSERVABILITY_VERSION=${NEW_VERSION}" >> $GITHUB_ENV
 
       - name: Commit and Push Changes
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "ops@concordium.com"
           git commit -am "Increment OBSERVABILITY_VERSION to ${NEW_VERSION}"
-          git push origin HEAD
+          git tag observability/${{ env.OBSERVABILITY_VERSION }}
+          git push origin HEAD --follow-tags
 
   release-observability-image:
     runs-on: ubuntu-latest

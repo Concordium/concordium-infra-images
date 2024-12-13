@@ -1,38 +1,31 @@
 name: Create and upload packer generated images
 
 on:
-#  push:
-#    branches:
-#      - 'lma/release/tags'
   workflow_dispatch:
     inputs:
       node_version:
-        description: "The version of Concordium node to built from. Format: x.y.z-q"
+        description: "Specify the Concordium node version to build. Use the format: x.y.z-q (e.g., 1.2.3-0), where q is the build version."
         required: true
         type: string
       release_type:
-        description: "The release type "
+        description: "Select the type of release to be made. Options include 'alpha' or 'rc' (release candidate)."
         required: true
         type: choice
         options:
           - alpha
           - rc
-#      observability_version:
-#        description: "The version for observability image. Only present for rollback functionality"
-#        required: false
-#        type: string
-
+      observability_version:
+        description: "The observability version. If in doubt, do not define"
+        required: false
+        type: string
 
 env:
   PACKER_VERSION: "latest"
   AWS_ROLE_ARN: "arn:aws:iam::192549843005:role/github-devops-cd"
   IMAGE_COUNT_UPPER_LIMIT: 20
   IMAGE_COUNT_LOWER_LIMIT: 10
-#  CONCORDIUM_NODE_VERSION: ${{ inputs.node_version }}
-  CONCORDIUM_NODE_VERSION: 7.0.6-5
-#  RELEASE_TYPE: ${{ inputs.release_type }}
-  RELEASE_TYPE: alpha
-
+  CONCORDIUM_NODE_VERSION: ${{ inputs.node_version }}
+  RELEASE_TYPE: ${{ inputs.release_type }}
 
 permissions:
   id-token: write
@@ -96,6 +89,29 @@ jobs:
         id: set-matrix
         run: echo "matrix=$MATRIX_JSON" >> $GITHUB_OUTPUT
 
+  remote-git-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - uses: actions/create-github-app-token@v1
+        id: app-token
+        with:
+          app-id: 1086655
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+
+      - name: Commit and Push Changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "ops@concordium.com"
+          git tag node/${{ env.CONCORDIUM_NODE_VERSION }}
+          git push origin --follow-tags
+          
 
   release-concordium-node-image:
     outputs:
@@ -106,7 +122,7 @@ jobs:
       image_name_aws_testnet: ${{ steps.image_name.outputs.image_name_aws_testnet }}
       image_name_aws_mainnet: ${{ steps.image_name.outputs.image_name_aws_mainnet }}
       image_name_aws_flynet: ${{ steps.image_name.outputs.image_name_aws_flynet }}
-    needs: [generate-matrix]
+    needs: [generate-matrix, remote-git-changes]
     environment: release-node-images
     runs-on: ubuntu-latest
     strategy:
@@ -121,6 +137,9 @@ jobs:
         uses: actions/checkout@v4
       - name: Load common variables
         run: cat ../.github/shared-variables/.env >> $GITHUB_ENV
+      - name: Set custom observability version
+        if: ${{ inputs.observability_version != "" }}
+        run: echo "OBSERVABILITY_VERSION=${{ inputs.observability_version }}" >> $GITHUB_ENV
       - name: Configure GCP credentials
         uses: google-github-actions/auth@v2
         with:
@@ -131,7 +150,7 @@ jobs:
         run: |
           VALUE=$(echo '${{ env.ENVIRONMENT_TO_AWS_REGION }}' | jq -r --arg key "${{ matrix.env }}" '.[$key]')
           if [[ $VALUE == "null" || $VALUE == "" ]]; then
-            echo "Key '${{ matrix.env }}' not found in ${{ env.ENVIRONMENT_TO_AWS_REGION }}"
+            echo "::error::Key '${{ matrix.env }}' not found in ${{ env.ENVIRONMENT_TO_AWS_REGION }}"
             exit 1
           fi
           echo "AWS_ENVIRONMENT_REGION=$VALUE" >> $GITHUB_ENV
@@ -140,7 +159,7 @@ jobs:
         run: |
           VALUE=$(echo '${{ env.REGION_TO_SUBNET }}' | jq -r --arg key "${{ env.AWS_ENVIRONMENT_REGION }}" '.[$key]')
           if [[ $VALUE == "null" || $VALUE == "" ]]; then
-            echo "Key '${{ env.AWS_ENVIRONMENT_REGION }}' not found in ${{ env.REGION_TO_SUBNET }}"
+            echo "::error::Key '${{ env.AWS_ENVIRONMENT_REGION }}' not found in ${{ env.REGION_TO_SUBNET }}"
             exit 1
           fi
           echo "SUBNET_ID=$VALUE" >> $GITHUB_ENV
@@ -161,7 +180,7 @@ jobs:
             VERSION_TRANSFORMED=${CONCORDIUM_NODE_VERSION//./-}
             echo "IMAGE_NAME=${{ matrix.env }}-v$VERSION_TRANSFORMED-concordium-node-${{ env.OBSERVABILITY_VERSION }}-x86-64" >> $GITHUB_ENV
           else
-            echo "Unknown cloud provider: ${{ matrix.cloud_provider }}"
+            echo "::error::Unknown cloud provider: ${{ matrix.cloud_provider }}"
             exit 1
           fi
       - name: Test if image exists
@@ -171,7 +190,7 @@ jobs:
           elif [ "${{ matrix.cloud_provider }}" == "gcp" ]; then
             echo "IMAGE_ID=$(gcloud compute images list --project="concordium-${{ matrix.env }}-0" --filter="name=($IMAGE_NAME)" --format="value(name)")" >> $GITHUB_ENV
           else
-            echo "Unknown cloud provider: ${{ matrix.cloud_provider }}"
+            echo "::error::Unknown cloud provider: ${{ matrix.cloud_provider }}"
             exit 1
           fi
       - name: Set source image id
@@ -182,7 +201,7 @@ jobs:
           elif [ "${{ matrix.cloud_provider }}" == "gcp" ]; then
             SOURCE_IMAGE_ID=$(gcloud compute images list --project="concordium-mgmt-0" --filter="name=(concordium-observability-node-${{ env.OBSERVABILITY_VERSION }}-x86-64)" --format="value(name)")
           else
-            echo "Unknown cloud provider: ${{ matrix.cloud_provider }}"
+            echo "::error::Unknown cloud provider: ${{ matrix.cloud_provider }}"
             exit 1
           fi
           echo "SOURCE_IMAGE_ID=$SOURCE_IMAGE_ID" >> $GITHUB_ENV
