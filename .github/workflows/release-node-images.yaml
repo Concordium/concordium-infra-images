@@ -27,10 +27,8 @@ env:
   AWS_ROLE_ARN: "arn:aws:iam::192549843005:role/github-devops-cd"
   IMAGE_COUNT_UPPER_LIMIT: 20
   IMAGE_COUNT_LOWER_LIMIT: 10
-#  CONCORDIUM_NODE_VERSION: ${{ inputs.node_version }}
-  CONCORDIUM_NODE_VERSION: 7.0.6-5
-#  RELEASE_TYPE: ${{ inputs.release_type }}
-  RELEASE_TYPE: alpha
+  CONCORDIUM_NODE_VERSION: ${{ inputs.node_version }}
+  RELEASE_TYPE: ${{ inputs.release_type }}
 
 permissions:
   id-token: write
