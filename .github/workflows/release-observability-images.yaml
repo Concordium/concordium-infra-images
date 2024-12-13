@@ -48,6 +48,8 @@ jobs:
 
       - name: Commit and Push Changes
         run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "ops@concordium.com"
           git commit -am "Increment OBSERVABILITY_VERSION to ${NEW_VERSION}"
           git push origin HEAD
 
