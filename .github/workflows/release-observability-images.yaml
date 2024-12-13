@@ -25,12 +25,12 @@ jobs:
       - name: Load and Increment OBSERVABILITY_VERSION
         run: |
           if [ ! -f  ${{ env.ENV_FILE_PATH }} ]; then
-            echo "${{ env.ENV_FILE_PATH }} file not found!"
+            echo "::error::${{ env.ENV_FILE_PATH }} file not found!"
             exit 1
           fi
           OBSERVABILITY_VERSION=$(grep '^OBSERVABILITY_VERSION=' .github/shared-variables/.env | cut -d '=' -f2)
           if [ -z "$OBSERVABILITY_VERSION" ]; then
-            echo "OBSERVABILITY_VERSION not found in .${{ env.ENV_FILE_PATH }}!"
+            echo "::error::OBSERVABILITY_VERSION not found in .${{ env.ENV_FILE_PATH }}!"
             exit 1
           fi
           NEW_VERSION=$(printf "%05d" $((10#$OBSERVABILITY_VERSION + 1)))
@@ -98,7 +98,7 @@ jobs:
           elif [ "${{ matrix.cloud_provider }}" == "aws" ]; then
             IMAGE_ID=$(aws ec2 describe-images --filters Name=name,Values=$IMAGE_NAME --query 'Images[*].ImageId' --output text)
           else
-            echo "Unknown cloud provider: ${{ matrix.cloud_provider }}"
+            echo "::error::Unknown cloud provider: ${{ matrix.cloud_provider }}"
             exit 1
           fi
           echo "IMAGE_ID=$IMAGE_ID" >> $GITHUB_ENV
@@ -108,7 +108,7 @@ jobs:
         run: |
           VALUE=$(echo '${{ env.REGION_TO_SUBNET }}' | jq -r --arg key "${{ env.OBSERVABILITY_AWS_REGION }}" '.[$key]')
           if [[ $VALUE == "null" ]]; then
-            echo  "Key '${{ env.AWS_ENVIRONMENT_REGION }}' not found in ${{ env.REGION_TO_SUBNET }}"
+            echo "::error::Key '${{ env.AWS_ENVIRONMENT_REGION }}' not found in ${{ env.REGION_TO_SUBNET }}"
             exit 1
           fi
           echo "AWS_SUBNET_ID=$VALUE" >> $GITHUB_ENV
