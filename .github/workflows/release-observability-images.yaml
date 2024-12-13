@@ -21,7 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     environment: release-node-images
     outputs:
-      observability_version: steps.observability.outputs.version
+      observability_version: ${{ steps.observability.outputs.version }}
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -44,8 +44,6 @@ jobs:
     runs-on: ubuntu-latest
     environment: release-node-images
     needs: [get-observability-version]
-    env:
-      OBSERVABILITY_VERSION: ${{ needs.get-observability-version.outputs.observability_version }}
     strategy:
       matrix:
         cloud_provider: ['gcp', 'aws']
@@ -85,7 +83,7 @@ jobs:
         run: packer init observability
 
       - name: Determine Image Name
-        run: echo "IMAGE_NAME=concordium-observability-node-${{ env.OBSERVABILITY_VERSION }}-${{ matrix.cloud_provider == 'gcp' && 'x86-64' || 'x86_64' }}" >> $GITHUB_ENV
+        run: echo "IMAGE_NAME=concordium-observability-node-${{ needs.get-observability-version.outputs.observability_version }}-${{ matrix.cloud_provider == 'gcp' && 'x86-64' || 'x86_64' }}" >> $GITHUB_ENV
 
       - name: Check if Image Already Exists
         run: |
