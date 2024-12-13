@@ -56,11 +56,6 @@ jobs:
     defaults:
       run:
         working-directory: ./packer
-    outputs:
-      image_id_gcp: ${{ steps.image_id.outputs.image_id_gcp }}
-      image_name_gcp: ${{ steps.image_name.outputs.image_name_gcp }}
-      image_id_aws: ${{ steps.image_id.outputs.image_id_aws }}
-      image_name_aws: ${{ steps.image_name.outputs.image_name_aws }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
