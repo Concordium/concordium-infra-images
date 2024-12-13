@@ -24,6 +24,8 @@ jobs:
     env:
       ENV_FILE_PATH: .github/shared-variables/.env
     steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
       - name: Load and Increment OBSERVABILITY_VERSION
         id: observability
         run: |
