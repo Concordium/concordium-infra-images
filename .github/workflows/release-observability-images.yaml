@@ -124,7 +124,7 @@ jobs:
 
   remote-git-changes:
     runs-on: ubuntu-latest
-    needs: [release-concordium-node-image, get-observability-version]
+    needs: [ release-observability-image, get-observability-version]
     steps:
       - uses: actions/create-github-app-token@v1
         id: app-token
