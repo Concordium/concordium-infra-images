@@ -22,16 +22,8 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Test
-        run: |
-          ls -a .github
-
       - name: Load and Increment OBSERVABILITY_VERSION
         run: |
-          if [ ! -f  ${{ env.ENV_FILE_PATH }} ]; then
-            echo "${{ env.ENV_FILE_PATH }} file not found!"
-            exit 1
-          fi
           OBSERVABILITY_VERSION=$(grep -E '^OBSERVABILITY_VERSION=' ${{ env.ENV_FILE_PATH }} | cut -d '=' -f2)
           if [ -z "$OBSERVABILITY_VERSION" ]; then
             echo "OBSERVABILITY_VERSION not found in .${{ env.ENV_FILE_PATH }}!"
