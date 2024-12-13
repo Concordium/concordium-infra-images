@@ -293,7 +293,7 @@ jobs:
         run: |
           set -e
           TARGET_AWS_REGIONS=$(echo '${{ env.ENVIRONMENT_TO_AWS_REGION }}' | jq -r -c '[..|strings]|unique| join(" ")')
-          IMAGES=$(python tools/find_images.py --image_count_lower_limit ${{ env.IMAGE_COUNT_LOWER_LIMIT }} --image_count_upper_limit ${{ env.IMAGE_COUNT_UPPER_LIMIT }} --aws_regions $TARGET_AWS_REGIONS)
+          IMAGES=$(python scripts/find_images.py --image_count_lower_limit ${{ env.IMAGE_COUNT_LOWER_LIMIT }} --image_count_upper_limit ${{ env.IMAGE_COUNT_UPPER_LIMIT }} --aws_regions $TARGET_AWS_REGIONS)
           echo "images=$(echo $IMAGES | jq '@json' | sed 's/^"\(.*\)"$/\1/')" >> $GITHUB_OUTPUT
 
   notify-slack-on-image-deletions:
@@ -307,7 +307,7 @@ jobs:
         with:
           payload: >-
             {
-              "text": "There are image which should be deleted: ```$DEVOPS_REPOSITORY_PATH/tools/delete_amis.sh '${{ needs.fetch-images.outputs.images }}'```"
+              "text": "There are image which should be deleted: ```$INFRA_IMAGES_REPOSITORY_PATH/scripts/delete_amis.sh '${{ needs.fetch-images.outputs.images }}'```"
             }
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_URL }}
