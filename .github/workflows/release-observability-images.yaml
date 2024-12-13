@@ -25,7 +25,8 @@ jobs:
       - name: Test
         run: |
           ls -a .github/shared-variables
-          cat -a .github/shared-variables/.env
+          cat .github/shared-variables/.env
+          echo "after"
           cat ${{ env.ENV_FILE_PATH }}
 
       - name: Load and Increment OBSERVABILITY_VERSION
