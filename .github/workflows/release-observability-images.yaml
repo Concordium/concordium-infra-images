@@ -16,6 +16,7 @@ jobs:
 
   update-observability-version:
     runs-on: ubuntu-latest
+    environment: release-node-images
     env:
       ENV_FILE_PATH: .github/shared-variables/.env
     steps:
