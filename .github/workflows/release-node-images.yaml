@@ -1,9 +1,6 @@
 name: Create and upload packer generated images
 
 on:
-  push:
-    branches:
-      - lma/release/tags
   workflow_dispatch:
     inputs:
       node_version:
@@ -31,7 +28,7 @@ env:
 #  CONCORDIUM_NODE_VERSION: ${{ inputs.node_version }}
   CONCORDIUM_NODE_VERSION: 7.0.6-5
 #  RELEASE_TYPE: ${{ inputs.release_type }}
-  RELEASE_TYPE: rc
+  RELEASE_TYPE: alpha
 
 
 permissions:
@@ -100,11 +97,11 @@ jobs:
   release-concordium-node-image:
     outputs:
       image_name_gcp_stagenet: ${{ steps.image_name.outputs.image_name_gcp_stagenet }}
-#      image_name_gcp_testnet: ${{ steps.image_name.outputs.image_name_gcp_testnet }}
-#      image_name_gcp_mainnet: ${{ steps.image_name.outputs.image_name_gcp_mainnet }}
+      image_name_gcp_testnet: ${{ steps.image_name.outputs.image_name_gcp_testnet }}
+      image_name_gcp_mainnet: ${{ steps.image_name.outputs.image_name_gcp_mainnet }}
       image_name_aws_stagenet: ${{ steps.image_name.outputs.image_name_aws_stagenet }}
-#      image_name_aws_testnet: ${{ steps.image_name.outputs.image_name_aws_testnet }}
-#      image_name_aws_mainnet: ${{ steps.image_name.outputs.image_name_aws_mainnet }}
+      image_name_aws_testnet: ${{ steps.image_name.outputs.image_name_aws_testnet }}
+      image_name_aws_mainnet: ${{ steps.image_name.outputs.image_name_aws_mainnet }}
       image_name_aws_flynet: ${{ steps.image_name.outputs.image_name_aws_flynet }}
     needs: [generate-matrix]
     environment: release-node-images
@@ -211,96 +208,93 @@ jobs:
         run: |
           echo "image_name_${{ matrix.cloud_provider }}_${{ matrix.env }}=$IMAGE_NAME" >> $GITHUB_OUTPUT
 
-#  notify-slack-changes:
-#    needs: [release-observability-image, release-concordium-node-image]
-#    environment: release-images
-#    runs-on: ubuntu-latest
-#    if: ${{ always() }}
-#    steps:
-#    - name: Sample updated Image IDs
-#      run: |
-#        echo '${{ toJson(needs.release-concordium-node-image.outputs) }}' > info.json
-#        UPDATED_IMAGE_IDS=$(cat info.json | jq -c \
-#          --arg el1 $(echo '${{ toJson(needs.release-observability-image.outputs) }}' | jq -r .image_name_gcp) \
-#          --arg el2 $(echo '${{ toJson(needs.release-observability-image.outputs) }}' | jq -r .image_name_aws) \
-#          '. + (if $el1 != "" and ($el1 != "null") then {"image_name_gcp_observability": $el1 } else {} end) + (if $el2 != "" and ($el2 != "null") then {"image_name_aws_observability": $el2 } else {} end)' | jq -R | sed 's/^"//;s/"$//')
-#        echo "UPDATED_IMAGE_IDS=$UPDATED_IMAGE_IDS" >> $GITHUB_ENV
-#    - name: Send updated image ids to slack
-#      if: ${{ env.UPDATED_IMAGE_IDS != '{}' && env.UPDATED_IMAGE_IDS != '' }}
-#      uses: slackapi/slack-github-action@v1.25.0
-#      with:
-#        payload: >-
-#          {
-#            "text": "The following image ids has been updated: ${{ env.UPDATED_IMAGE_IDS }}"
-#          }
-#      env:
-#        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_URL }}
-#
-#  fetch-images:
-#    needs: [release-concordium-node-image]
-#    runs-on: ubuntu-latest
-#    environment: release-images
-#    outputs:
-#      images: ${{ steps.fetch-images.outputs.images }}
-#    steps:
-#      - name: Checkout code
-#        uses: actions/checkout@v4
-#
-#      - name: Configure GCP credentials
-#        uses: google-github-actions/auth@v2
-#        with:
-#          project_id: concordium-mgmt-0
-#          workload_identity_provider: projects/761241104197/locations/global/workloadIdentityPools/github/providers/concordium
-#          service_account: github-devops-cd@concordium-mgmt-0.iam.gserviceaccount.com
-#
-#      - name: Configure AWS Credentials
-#        uses: aws-actions/configure-aws-credentials@v4
-#        with:
-#          aws-region: ${{ env.OBSERVABILITY_AWS_REGION }}
-#          role-to-assume: ${{ env.AWS_ROLE_ARN }}
-#          role-session-name: ReleaseConcordiumNodeImageSession
-#
-#      - name: Set up Python
-#        uses: actions/setup-python@v5
-#        with:
-#          python-version: '3.11'
-#
-#      - name: Fetch images to be deleted
-#        id: fetch-images
-#        run: |
-#          set -e
-#          TARGET_AWS_REGIONS=$(echo '${{ env.ENVIRONMENT_TO_AWS_REGION }}' | jq -r -c '[..|strings]|unique| join(" ")')
-#          IMAGES=$(python tools/find_images.py --image_count_lower_limit ${{ env.IMAGE_COUNT_LOWER_LIMIT }} --image_count_upper_limit ${{ env.IMAGE_COUNT_UPPER_LIMIT }} --aws_regions $TARGET_AWS_REGIONS)
-#          echo "images=$(echo $IMAGES | jq '@json' | sed 's/^"\(.*\)"$/\1/')" >> $GITHUB_OUTPUT
-#
-#  notify-slack-on-image-deletions:
-#    needs: [fetch-images]
-#    environment: release-images
-#    runs-on: ubuntu-latest
-#    if: ${{ needs.fetch-images.outputs.images != '{}' }}
-#    steps:
-#      - name: Send GitHub Action trigger data to Slack workflow
-#        uses: slackapi/slack-github-action@v1.25.0
-#        with:
-#          payload: >-
-#            {
-#              "text": "There are image which should be deleted: ```$DEVOPS_REPOSITORY_PATH/tools/delete_amis.sh '${{ needs.fetch-images.outputs.images }}'```"
-#            }
-#        env:
-#          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_URL }}
-#
-#  notify-slack-on-failure:
-#    needs: [release-observability-image, release-concordium-node-image]
-#    environment: release-images
-#    runs-on: ubuntu-latest
-#    if: ${{ failure() }}
-#    steps:
-#      - name: Send GitHub Action trigger data to Slack workflow
-#        uses: slackapi/slack-github-action@v1.25.0
-#        with:
-#          payload: >-
-#            {
-#              "text": "One or more GitHub Actions jobs failed: <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|Click here> to see the run."
-#            }
-#        env:
-#          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_URL }}
+  notify-slack-changes:
+    needs: [release-observability-image, release-concordium-node-image]
+    environment: release-images
+    runs-on: ubuntu-latest
+    if: ${{ always() }}
+    steps:
+    - name: Sample updated Image IDs
+      run: |
+        echo '${{ toJson(needs.release-concordium-node-image.outputs) }}' > info.json
+        UPDATED_IMAGE_IDS=$(cat info.json | jq -c | jq -R | sed 's/^"//;s/"$//')
+        echo "UPDATED_IMAGE_IDS=$UPDATED_IMAGE_IDS" >> $GITHUB_ENV
+    - name: Send updated image ids to slack
+      if: ${{ env.UPDATED_IMAGE_IDS != '{}' && env.UPDATED_IMAGE_IDS != '' }}
+      uses: slackapi/slack-github-action@v1.25.0
+      with:
+        payload: >-
+          {
+            "text": "The following image ids has been updated: ${{ env.UPDATED_IMAGE_IDS }}"
+          }
+      env:
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_URL }}
+
+  fetch-images:
+    needs: [release-concordium-node-image]
+    runs-on: ubuntu-latest
+    environment: release-node-images
+    outputs:
+      images: ${{ steps.fetch-images.outputs.images }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure GCP credentials
+        uses: google-github-actions/auth@v2
+        with:
+          project_id: concordium-mgmt-0
+          workload_identity_provider: projects/761241104197/locations/global/workloadIdentityPools/github/providers/concordium
+          service_account: github-devops-cd@concordium-mgmt-0.iam.gserviceaccount.com
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: ${{ env.OBSERVABILITY_AWS_REGION }}
+          role-to-assume: ${{ env.AWS_ROLE_ARN }}
+          role-session-name: ReleaseConcordiumNodeImageSession
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Fetch images to be deleted
+        id: fetch-images
+        run: |
+          set -e
+          TARGET_AWS_REGIONS=$(echo '${{ env.ENVIRONMENT_TO_AWS_REGION }}' | jq -r -c '[..|strings]|unique| join(" ")')
+          IMAGES=$(python tools/find_images.py --image_count_lower_limit ${{ env.IMAGE_COUNT_LOWER_LIMIT }} --image_count_upper_limit ${{ env.IMAGE_COUNT_UPPER_LIMIT }} --aws_regions $TARGET_AWS_REGIONS)
+          echo "images=$(echo $IMAGES | jq '@json' | sed 's/^"\(.*\)"$/\1/')" >> $GITHUB_OUTPUT
+
+  notify-slack-on-image-deletions:
+    needs: [fetch-images]
+    environment: release-node-images
+    runs-on: ubuntu-latest
+    if: ${{ needs.fetch-images.outputs.images != '{}' }}
+    steps:
+      - name: Send GitHub Action trigger data to Slack workflow
+        uses: slackapi/slack-github-action@v1.25.0
+        with:
+          payload: >-
+            {
+              "text": "There are image which should be deleted: ```$DEVOPS_REPOSITORY_PATH/tools/delete_amis.sh '${{ needs.fetch-images.outputs.images }}'```"
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_URL }}
+
+  notify-slack-on-failure:
+    needs: [release-concordium-node-image]
+    environment: release-images
+    runs-on: ubuntu-latest
+    if: ${{ failure() }}
+    steps:
+      - name: Send GitHub Action trigger data to Slack workflow
+        uses: slackapi/slack-github-action@v1.25.0
+        with:
+          payload: >-
+            {
+              "text": "One or more GitHub Actions jobs failed: <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|Click here> to see the run."
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_URL }}
