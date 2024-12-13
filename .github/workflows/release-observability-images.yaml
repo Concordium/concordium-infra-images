@@ -127,6 +127,8 @@ jobs:
     runs-on: ubuntu-latest
     needs: [ release-observability-image, get-observability-version]
     environment: release-node-images
+    env:
+      OBSERVABILITY_VERSION=${{ needs.get-observability-version.outputs.observability_version }}
     steps:
       - uses: actions/create-github-app-token@v1
         id: app-token
@@ -141,14 +143,13 @@ jobs:
 
       - name: Alter observability version
         run: |
-          sed -i "s/^OBSERVABILITY_VERSION=.*/OBSERVABILITY_VERSION=${{ needs.get-observability-version.outputs.observability_version }}/" ${{ env.ENV_FILE_PATH }}
-          echo "::notice::OBSERVABILITY_VERSION=${{ needs.get-observability-version.outputs.observability_version }}"
-          echo "OBSERVABILITY_VERSION=${{ needs.get-observability-version.outputs.observability_version }}" >> $GITHUB_ENV
+          sed -i "s/^OBSERVABILITY_VERSION=.*/OBSERVABILITY_VERSION=${{ env.OBSERVABILITY_VERSION }}/" ${{ env.ENV_FILE_PATH }}
+          echo "::notice::OBSERVABILITY_VERSION=${{ env.OBSERVABILITY_VERSION }}"
 
       - name: Commit and Push Changes
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "ops@concordium.com"
-          git commit -am "Increment OBSERVABILITY_VERSION to ${{ needs.get-observability-version.outputs.observability_version }}"
-          git tag observability/${{ needs.get-observability-version.outputs.observability_version }}
+          git commit -am "Increment OBSERVABILITY_VERSION to ${{ env.OBSERVABILITY_VERSION }}"
+          git tag observability/${{ env.OBSERVABILITY_VERSION }}
           git push origin HEAD --follow-tags
