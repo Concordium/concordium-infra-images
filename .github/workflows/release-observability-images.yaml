@@ -24,18 +24,15 @@ jobs:
 
       - name: Test
         run: |
-          ls -a .github/shared-variables
+          
           cat .github/shared-variables/.env
           echo "after"
           cat ${{ env.ENV_FILE_PATH }}
 
       - name: Load and Increment OBSERVABILITY_VERSION
         run: |
-          if [ ! -f  ${{ env.ENV_FILE_PATH }} ]; then
-            echo "${{ env.ENV_FILE_PATH }} file not found!"
-            exit 1
-          fi
-          OBSERVABILITY_VERSION=$(grep -E '^OBSERVABILITY_VERSION=' ${{ env.ENV_FILE_PATH }} | cut -d '=' -f2)
+          ls -a .github/shared-variables
+          OBSERVABILITY_VERSION=$(grep '^OBSERVABILITY_VERSION=' .github/shared-variables/.env | cut -d '=' -f2)
           if [ -z "$OBSERVABILITY_VERSION" ]; then
             echo "OBSERVABILITY_VERSION not found in .${{ env.ENV_FILE_PATH }}!"
             exit 1
