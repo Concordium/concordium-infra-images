@@ -284,7 +284,7 @@ jobs:
               "text": "There are image which should be deleted: ```$DEVOPS_REPOSITORY_PATH/tools/delete_amis.sh '${{ needs.fetch-images.outputs.images }}'```"
             }
         env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_URL }}
+          SLACK_URL: ${{ secrets.SLACK_URL }}
 
   notify-slack-on-failure:
     needs: [release-concordium-node-image]
