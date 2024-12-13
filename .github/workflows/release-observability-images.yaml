@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - 'main'
+      - 'lma/release/tags'
 env:
   PACKER_VERSION: "latest"
   AWS_ROLE_ARN: "arn:aws:iam::192549843005:role/github-devops-cd"
@@ -13,9 +14,42 @@ permissions:
   contents: read
 jobs:
 
+  update-observability-version:
+    runs-on: ubuntu-latest
+    env:
+      ENV_FILE_PATH: .github/shared-variables.env
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Load and Increment OBSERVABILITY_VERSION
+        run: |
+          if [ ! -f  ${{ env.ENV_FILE_PATH }} ]; then
+            echo "${{ env.ENV_FILE_PATH }} file not found!"
+            exit 1
+          fi
+          OBSERVABILITY_VERSION=$(grep -E '^OBSERVABILITY_VERSION=' ${{ env.ENV_FILE_PATH }} | cut -d '=' -f2)
+          if [ -z "$OBSERVABILITY_VERSION" ]; then
+            echo "OBSERVABILITY_VERSION not found in .${{ env.ENV_FILE_PATH }}!"
+            exit 1
+          fi
+          NEW_VERSION=$(printf "%05d" $((10#$OBSERVABILITY_VERSION + 1)))
+          sed -i "s/^OBSERVABILITY_VERSION=.*/OBSERVABILITY_VERSION=${NEW_VERSION}/" .env
+          echo::notice::"OBSERVABILITY_VERSION=${NEW_VERSION}"
+
+      - name: Commit and Push Changes
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git commit -am "Increment OBSERVABILITY_VERSION to ${NEW_VERSION}"
+          git push origin HEAD
+
   release-observability-image:
     runs-on: ubuntu-latest
     environment: release-node-images
+    needs: [update-observability-version]
     strategy:
       matrix:
         cloud_provider: ['gcp', 'aws']
