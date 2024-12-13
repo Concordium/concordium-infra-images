@@ -126,7 +126,7 @@ jobs:
     needs: [ release-observability-image, get-observability-version]
     environment: release-node-images
     env:
-      OBSERVABILITY_VERSION=${{ needs.get-observability-version.outputs.observability_version }}
+      OBSERVABILITY_VERSION: ${{ needs.get-observability-version.outputs.observability_version }}
     steps:
       - uses: actions/create-github-app-token@v1
         id: app-token
