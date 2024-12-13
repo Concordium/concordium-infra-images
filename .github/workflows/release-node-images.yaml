@@ -213,6 +213,7 @@ jobs:
 
   remote-git-changes:
     runs-on: ubuntu-latest
+    environment: release-node-images
     needs: [release-concordium-node-image]
     steps:
       - uses: actions/create-github-app-token@v1
@@ -235,7 +236,7 @@ jobs:
 
   notify-slack-changes:
     needs: [release-concordium-node-image]
-    environment: release-images
+    environment: release-node-images
     runs-on: ubuntu-latest
     if: ${{ always() }}
     steps:
@@ -306,7 +307,7 @@ jobs:
               "text": "There are image which should be deleted: ```$DEVOPS_REPOSITORY_PATH/tools/delete_amis.sh '${{ needs.fetch-images.outputs.images }}'```"
             }
         env:
-          SLACK_URL: ${{ secrets.SLACK_URL }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_URL }}
 
   notify-slack-on-failure:
     needs: [release-concordium-node-image]
