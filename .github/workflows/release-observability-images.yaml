@@ -2,9 +2,6 @@ name: Create and upload packer generated images
 
 
 on:
-  push:
-    branches:
-      - "lma/release/tags"
   workflow_dispatch:
 env:
   PACKER_VERSION: "latest"
