@@ -1,0 +1,48 @@
+name: Release node images
+
+on:
+  push:
+    branches:
+      - lma/fix/input
+jobs:
+  generate-matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - name: Initialize Matrix with alpha environments
+        run: |
+          MATRIX_JSON=$(echo '[
+          ]' | jq -c)
+          echo "MATRIX_JSON=${MATRIX_JSON}" >> $GITHUB_ENV
+
+      - name: Release candidate environments
+        if: ${{ env.RELEASE_TYPE == 'rc' }}
+        run: |
+          MATRIX_JSON=$(echo "$MATRIX_JSON" | jq -c '. + [
+            {
+              "env": "mainnet",
+              "tld": "software",
+              "cloud_provider": "aws",
+              "ami_users": "[\"727113945353\"]"
+            }
+          ]')
+          echo "MATRIX_JSON=${MATRIX_JSON}" >> $GITHUB_ENV
+
+      - name: Output Matrix JSON
+        id: set-matrix
+        run: echo "matrix=$MATRIX_JSON" >> $GITHUB_OUTPUT
+
+  release-concordium-node-image:
+    needs: [generate-matrix]
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.generate-matrix.outputs.matrix) }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set variables
+        run: |
+          export AMI_USERS='${{ matrix.ami_users }}'
