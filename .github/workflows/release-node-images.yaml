@@ -1,0 +1,325 @@
+name: Create and upload packer generated images
+
+on:
+  workflow_dispatch:
+    inputs:
+      node_version:
+        description: "Specify the Concordium node version to build. Use the format: x.y.z-q (e.g., 1.2.3-0), where q is the build version."
+        required: true
+        type: string
+      release_type:
+        description: "Select the type of release to be made. Options include 'alpha' or 'rc' (release candidate)."
+        required: true
+        type: choice
+        options:
+          - alpha
+          - rc
+      observability_version:
+        description: "The observability version. If in doubt, do not define"
+        required: false
+        type: string
+
+env:
+  PYTHON_VERSION: "3.11"
+  PACKER_VERSION: "latest"
+  AWS_ROLE_ARN: "arn:aws:iam::192549843005:role/github-devops-cd"
+  IMAGE_COUNT_UPPER_LIMIT: 20
+  IMAGE_COUNT_LOWER_LIMIT: 10
+  CONCORDIUM_NODE_VERSION: ${{ inputs.node_version }}
+  RELEASE_TYPE: ${{ inputs.release_type }}
+
+permissions:
+  id-token: write
+  contents: read
+jobs:
+  generate-matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - name: Initialize Matrix with alpha environments
+        run: |
+          MATRIX_JSON=$(echo '[
+            {
+              "env": "stagenet",
+              "tld": "com",
+              "cloud_provider": "aws"
+            },
+            {
+              "env": "flynet",
+              "tld": "com",
+              "cloud_provider": "aws"
+            },
+            {
+              "env": "stagenet",
+              "tld": "com",
+              "cloud_provider": "gcp"
+            }
+          ]' | jq -c)
+          echo "MATRIX_JSON=${MATRIX_JSON}" >> $GITHUB_ENV
+
+      - name: Release candidate environments
+        if: ${{ env.RELEASE_TYPE == 'rc' }}
+        run: |
+          MATRIX_JSON=$(echo "$MATRIX_JSON" | jq -c '. + [
+            {
+              "env": "testnet",
+              "tld": "com",
+              "cloud_provider": "aws"
+            },
+            {
+              "env": "testnet",
+              "tld": "com",
+              "cloud_provider": "gcp"
+            },
+            {
+              "env": "mainnet",
+              "tld": "software",
+              "cloud_provider": "aws",
+              "ami_users": ["727113945353"]
+            },
+            {
+              "env": "mainnet",
+              "tld": "software",
+              "cloud_provider": "gcp"
+            }
+          ]')
+          echo "MATRIX_JSON=${MATRIX_JSON}" >> $GITHUB_ENV
+
+      - name: Output Matrix JSON
+        id: set-matrix
+        run: echo "matrix=$MATRIX_JSON" >> $GITHUB_OUTPUT
+
+  release-concordium-node-image:
+    outputs:
+      image_name_gcp_stagenet: ${{ steps.image_name.outputs.image_name_gcp_stagenet }}
+      image_name_gcp_testnet: ${{ steps.image_name.outputs.image_name_gcp_testnet }}
+      image_name_gcp_mainnet: ${{ steps.image_name.outputs.image_name_gcp_mainnet }}
+      image_name_aws_stagenet: ${{ steps.image_name.outputs.image_name_aws_stagenet }}
+      image_name_aws_testnet: ${{ steps.image_name.outputs.image_name_aws_testnet }}
+      image_name_aws_mainnet: ${{ steps.image_name.outputs.image_name_aws_mainnet }}
+      image_name_aws_flynet: ${{ steps.image_name.outputs.image_name_aws_flynet }}
+    needs: [generate-matrix]
+    environment: release-node-images
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.generate-matrix.outputs.matrix) }}
+    defaults:
+      run:
+        working-directory: ./packer
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Load common variables
+        run: cat ../.github/shared-variables/.env >> $GITHUB_ENV
+      - name: Set custom observability version
+        if: ${{ inputs.observability_version != "" }}
+        run: echo "OBSERVABILITY_VERSION=${{ inputs.observability_version }}" >> $GITHUB_ENV
+      - name: Configure GCP credentials
+        uses: google-github-actions/auth@v2
+        with:
+          project_id: concordium-mgmt-0
+          workload_identity_provider: projects/761241104197/locations/global/workloadIdentityPools/github/providers/concordium
+          service_account: github-devops-cd@concordium-mgmt-0.iam.gserviceaccount.com
+      - name: Setup AWS REGION
+        run: |
+          VALUE=$(echo '${{ env.ENVIRONMENT_TO_AWS_REGION }}' | jq -r --arg key "${{ matrix.env }}" '.[$key]')
+          if [[ $VALUE == "null" || $VALUE == "" ]]; then
+            echo "::error::Key '${{ matrix.env }}' not found in ${{ env.ENVIRONMENT_TO_AWS_REGION }}"
+            exit 1
+          fi
+          echo "AWS_ENVIRONMENT_REGION=$VALUE" >> $GITHUB_ENV
+      - name: Setup subnet id
+        if: ${{ matrix.cloud_provider == 'aws' }}
+        run: |
+          VALUE=$(echo '${{ env.REGION_TO_SUBNET }}' | jq -r --arg key "${{ env.AWS_ENVIRONMENT_REGION }}" '.[$key]')
+          if [[ $VALUE == "null" || $VALUE == "" ]]; then
+            echo "::error::Key '${{ env.AWS_ENVIRONMENT_REGION }}' not found in ${{ env.REGION_TO_SUBNET }}"
+            exit 1
+          fi
+          echo "SUBNET_ID=$VALUE" >> $GITHUB_ENV
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: ${{ env.AWS_ENVIRONMENT_REGION }}
+          role-to-assume: ${{ env.AWS_ROLE_ARN }}
+          role-session-name: ReleaseConcordiumNodeImageSession
+      - name: Download file from S3
+        run: |
+          aws s3 cp s3://distribution.${{ matrix.env }}.concordium.${{ matrix.tld }}/deb/concordium-${{ matrix.env }}-node_${{ env.CONCORDIUM_NODE_VERSION }}_amd64.deb ./concordium-node.deb
+      - name: Setup image name
+        run: |
+          if [ "${{ matrix.cloud_provider }}" == "aws" ]; then
+            echo "IMAGE_NAME=${{ matrix.env }}-${{ env.CONCORDIUM_NODE_VERSION }}-concordium-node-${{ env.OBSERVABILITY_VERSION }}-x86_64" >> $GITHUB_ENV
+          elif [ "${{ matrix.cloud_provider }}" == "gcp" ]; then
+            VERSION_TRANSFORMED=${CONCORDIUM_NODE_VERSION//./-}
+            echo "IMAGE_NAME=${{ matrix.env }}-v$VERSION_TRANSFORMED-concordium-node-${{ env.OBSERVABILITY_VERSION }}-x86-64" >> $GITHUB_ENV
+          else
+            echo "::error::Unknown cloud provider: ${{ matrix.cloud_provider }}"
+            exit 1
+          fi
+      - name: Test if image exists
+        run: |
+          if [ "${{ matrix.cloud_provider }}" == "aws" ]; then
+            echo "IMAGE_ID=$(aws ec2 describe-images --filters Name=name,Values=$IMAGE_NAME --query 'Images[*].ImageId' --output text)" >> $GITHUB_ENV
+          elif [ "${{ matrix.cloud_provider }}" == "gcp" ]; then
+            echo "IMAGE_ID=$(gcloud compute images list --project="concordium-${{ matrix.env }}-0" --filter="name=($IMAGE_NAME)" --format="value(name)")" >> $GITHUB_ENV
+          else
+            echo "::error::Unknown cloud provider: ${{ matrix.cloud_provider }}"
+            exit 1
+          fi
+      - name: Set source image id
+        if: ${{ env.IMAGE_ID == '' }}
+        run: |
+          if [ "${{ matrix.cloud_provider }}" == "aws" ]; then
+            SOURCE_IMAGE_ID=$(aws ec2 describe-images --filters Name=name,Values=concordium-observability-node-${{ env.OBSERVABILITY_VERSION }}-x86_64 --query 'Images[*].ImageId' --output text)
+          elif [ "${{ matrix.cloud_provider }}" == "gcp" ]; then
+            SOURCE_IMAGE_ID=$(gcloud compute images list --project="concordium-mgmt-0" --filter="name=(concordium-observability-node-${{ env.OBSERVABILITY_VERSION }}-x86-64)" --format="value(name)")
+          else
+            echo "::error::Unknown cloud provider: ${{ matrix.cloud_provider }}"
+            exit 1
+          fi
+          echo "SOURCE_IMAGE_ID=$SOURCE_IMAGE_ID" >> $GITHUB_ENV
+
+      - name: Packer concordium-node init
+        if: ${{ env.IMAGE_ID == '' }}
+        run: packer init concordium-node
+      - name: Set variables
+        if: ${{ env.IMAGE_ID == '' }}
+        run: |
+          export CLOUD_PROVIDER=${{ matrix.cloud_provider }}
+          export ENVIRONMENT=${{ matrix.env }}
+          export CONCORDIUM_NODE_PATH=./concordium-node.deb
+          export AWS_SUBNET_ID=${{ env.SUBNET_ID }}
+          export AMI_USERS='${{ matrix.ami_users }}'
+          if [ "$AMI_USERS" == "" ]; then
+            export AMI_USERS='[]'
+          fi
+          envsubst < concordium-node/variables.pkrvars.hcl.template > variables.pkrvars.hcl
+      - name: Build concordium-node image
+        if: ${{ env.IMAGE_ID == '' }}
+        run: packer build -var-file=./variables.pkrvars.hcl concordium-node
+      - name: Output image name
+        if: ${{ env.IMAGE_ID == '' }}
+        id: image_name
+        run: |
+          echo "image_name_${{ matrix.cloud_provider }}_${{ matrix.env }}=$IMAGE_NAME" >> $GITHUB_OUTPUT
+
+  remote-git-changes:
+    runs-on: ubuntu-latest
+    environment: release-node-images
+    needs: [release-concordium-node-image]
+    steps:
+      - uses: actions/create-github-app-token@v1
+        id: app-token
+        with:
+          app-id: ${{ vars.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+
+      - name: Commit and Push Changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "ops@concordium.com"
+          git tag node/${{ env.CONCORDIUM_NODE_VERSION }}
+          git push origin --follow-tags
+
+  notify-slack-changes:
+    needs: [release-concordium-node-image]
+    environment: release-node-images
+    runs-on: ubuntu-latest
+    if: ${{ always() }}
+    steps:
+    - name: Sample updated Image IDs
+      run: |
+        echo '${{ toJson(needs.release-concordium-node-image.outputs) }}' > info.json
+        UPDATED_IMAGE_IDS=$(cat info.json | jq -c | jq -R | sed 's/^"//;s/"$//')
+        echo "UPDATED_IMAGE_IDS=$UPDATED_IMAGE_IDS" >> $GITHUB_ENV
+    - name: Send updated image ids to slack
+      if: ${{ env.UPDATED_IMAGE_IDS != '{}' && env.UPDATED_IMAGE_IDS != '' }}
+      uses: slackapi/slack-github-action@v1.25.0
+      with:
+        payload: >-
+          {
+            "text": "The following image ids has been updated: ${{ env.UPDATED_IMAGE_IDS }}"
+          }
+      env:
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_URL }}
+
+  fetch-images:
+    needs: [release-concordium-node-image]
+    runs-on: ubuntu-latest
+    environment: release-node-images
+    outputs:
+      images: ${{ steps.fetch-images.outputs.images }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Load common variables
+        run: cat .github/shared-variables/.env >> $GITHUB_ENV
+
+      - name: Configure GCP credentials
+        uses: google-github-actions/auth@v2
+        with:
+          project_id: concordium-mgmt-0
+          workload_identity_provider: projects/761241104197/locations/global/workloadIdentityPools/github/providers/concordium
+          service_account: github-devops-cd@concordium-mgmt-0.iam.gserviceaccount.com
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: ${{ env.OBSERVABILITY_AWS_REGION }}
+          role-to-assume: ${{ env.AWS_ROLE_ARN }}
+          role-session-name: ReleaseConcordiumNodeImageSession
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Fetch images to be deleted
+        id: fetch-images
+        run: |
+          set -e
+          TARGET_AWS_REGIONS=$(echo '${{ env.ENVIRONMENT_TO_AWS_REGION }}' | jq -r -c '[..|strings]|unique| join(" ")')
+          IMAGES=$(python scripts/find_images.py --image_count_lower_limit ${{ env.IMAGE_COUNT_LOWER_LIMIT }} --image_count_upper_limit ${{ env.IMAGE_COUNT_UPPER_LIMIT }} --aws_regions $TARGET_AWS_REGIONS)
+          echo "images=$(echo $IMAGES | jq '@json' | sed 's/^"\(.*\)"$/\1/')" >> $GITHUB_OUTPUT
+
+  notify-slack-on-image-deletions:
+    needs: [fetch-images]
+    environment: release-node-images
+    runs-on: ubuntu-latest
+    if: ${{ needs.fetch-images.outputs.images != '{}' }}
+    steps:
+      - name: Send GitHub Action trigger data to Slack workflow
+        uses: slackapi/slack-github-action@v1.25.0
+        with:
+          payload: >-
+            {
+              "text": "There are image which should be deleted: ```$INFRA_IMAGES_REPOSITORY_PATH/scripts/delete_amis.sh '${{ needs.fetch-images.outputs.images }}'```"
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_URL }}
+
+  notify-slack-on-failure:
+    needs: [release-concordium-node-image]
+    environment: release-node-images
+    runs-on: ubuntu-latest
+    if: ${{ failure() }}
+    steps:
+      - name: Send GitHub Action trigger data to Slack workflow
+        uses: slackapi/slack-github-action@v1.25.0
+        with:
+          payload: >-
+            {
+              "text": "One or more GitHub Actions jobs failed: <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|Click here> to see the run."
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_URL }}
