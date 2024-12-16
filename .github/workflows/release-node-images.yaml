@@ -1,4 +1,4 @@
-name: Create and upload packer generated images
+name: Release node images
 
 on:
   workflow_dispatch:
