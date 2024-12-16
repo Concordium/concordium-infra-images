@@ -115,7 +115,7 @@ jobs:
       - name: Load common variables
         run: cat ../.github/shared-variables/.env >> $GITHUB_ENV
       - name: Set custom observability version
-        if: ${{ inputs.observability_version != "" }}
+        if: ${{ inputs.observability_version != '' }}
         run: echo "OBSERVABILITY_VERSION=${{ inputs.observability_version }}" >> $GITHUB_ENV
       - name: Configure GCP credentials
         uses: google-github-actions/auth@v2
