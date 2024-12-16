@@ -8,6 +8,9 @@ env:
   AWS_ROLE_ARN: "arn:aws:iam::192549843005:role/github-devops-cd"
   ENV_FILE_PATH: .github/shared-variables/.env
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   id-token: write
