@@ -76,7 +76,7 @@ jobs:
               "env": "mainnet",
               "tld": "software",
               "cloud_provider": "aws",
-              "ami_users": ["727113945353"]
+              "ami_users": "[\"727113945353\"]"
             },
             {
               "env": "mainnet",
