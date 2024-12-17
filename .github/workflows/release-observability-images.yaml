@@ -149,5 +149,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "ops@concordium.com"
           git commit -am "Increment OBSERVABILITY_VERSION to ${{ env.OBSERVABILITY_VERSION }}"
-          git tag observability/${{ env.OBSERVABILITY_VERSION }}
+          git tag -m "Release observability version ${{ env.OBSERVABILITY_VERSION }}" observability/${{ env.OBSERVABILITY_VERSION }}
           git push origin HEAD --follow-tags
