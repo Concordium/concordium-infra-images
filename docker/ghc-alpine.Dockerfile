@@ -13,6 +13,6 @@ RUN curl --proto '=https' --tlsv1.2 -sSf https://get-ghcup.haskell.org | sh
 # Get GHC source
 RUN git clone -b ghc-"$GHC_VERSION"-release https://gitlab.haskell.org/ghc/ghc.git/ --recurse-submodules
 
-COPY alpine-integer-gmp-ghc.sh /alpine-integer-gmp-ghc.sh
+COPY scripts/alpine-integer-gmp-ghc.sh /alpine-integer-gmp-ghc.sh
 RUN chmod +x /alpine-integer-gmp-ghc.sh
 ENTRYPOINT ["./alpine-integer-gmp-ghc.sh"]
