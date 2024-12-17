@@ -34,4 +34,4 @@ jobs:
           INTEGER_VARIANT="${{ env.INTEGER_VARIANT }}" \
           GHC_VERSION="${{ env.GHC_VERSION }}" \
           BOOTSTRAP_GHC_VERSION="${{ env.BOOTSTRAP_GHC_VERSION }}" \
-          ./fpic/linux-fpic-ghc-build-and-push.sh
+          ./scripts/linux-fpic-ghc-build-and-push.sh
