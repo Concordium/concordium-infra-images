@@ -7,7 +7,7 @@ env:
   AWS_ROLE_TO_ASSUME: "arn:aws:iam::192549843005:role/github_concordium-ghc"
   INTEGER_VARIANT: "gmp"
   GHC_VERSION: "9.6.6"
-  BOTTSTRAP_GHC_VERSION: "9.6.4"
+  BOOTSTRAP_GHC_VERSION: "9.6.4"
 
 permissions:
   id-token: write
@@ -33,5 +33,5 @@ jobs:
           # BOOTSTRAP_GHC_VERSION corresponds to the version of GHC that we are using to build GHC_VERSION.
           INTEGER_VARIANT="${{ env.INTEGER_VARIANT }}" \
           GHC_VERSION="${{ env.GHC_VERSION }}" \
-          BOOTSTRAP_GHC_VERSION="${{ env.BOTTSTRAP_GHC_VERSION }}" \
+          BOOTSTRAP_GHC_VERSION="${{ env.BOOTSTRAP_GHC_VERSION }}" \
           ./fpic/linux-fpic-ghc-build-and-push.sh
