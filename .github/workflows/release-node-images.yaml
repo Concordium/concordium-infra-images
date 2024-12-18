@@ -22,7 +22,6 @@ on:
 env:
   PYTHON_VERSION: "3.11"
   PACKER_VERSION: "latest"
-  AWS_ROLE_ARN: "arn:aws:iam::192549843005:role/github-devops-cd"
   IMAGE_COUNT_UPPER_LIMIT: 20
   IMAGE_COUNT_LOWER_LIMIT: 10
   CONCORDIUM_NODE_VERSION: ${{ inputs.node_version }}
@@ -122,7 +121,7 @@ jobs:
         with:
           project_id: concordium-mgmt-0
           workload_identity_provider: projects/761241104197/locations/global/workloadIdentityPools/github/providers/concordium
-          service_account: github-devops-cd@concordium-mgmt-0.iam.gserviceaccount.com
+          service_account: ${{ env.GCP_SERVICE_ACCOUNT }}
       - name: Setup AWS REGION
         run: |
           VALUE=$(echo '${{ env.ENVIRONMENT_TO_AWS_REGION }}' | jq -r --arg key "${{ matrix.env }}" '.[$key]')
@@ -270,7 +269,7 @@ jobs:
         with:
           project_id: concordium-mgmt-0
           workload_identity_provider: projects/761241104197/locations/global/workloadIdentityPools/github/providers/concordium
-          service_account: github-devops-cd@concordium-mgmt-0.iam.gserviceaccount.com
+          service_account: ${{ env.GCP_SERVICE_ACCOUNT }}
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
