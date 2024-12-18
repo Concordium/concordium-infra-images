@@ -62,7 +62,7 @@ jobs:
         with:
           project_id: concordium-mgmt-0
           workload_identity_provider: projects/761241104197/locations/global/workloadIdentityPools/github/providers/concordium
-          service_account: github-infra-images-packer@concordium-mgmt-0.iam.gserviceaccount.com
+          service_account: ${{ env.GCP_SERVICE_ACCOUNT }}
 
       - name: Configure AWS Credentials
         if: matrix.cloud_provider == 'aws'
