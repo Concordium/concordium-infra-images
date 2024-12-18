@@ -29,6 +29,12 @@ jobs:
           role-to-assume: ${{ env.AWS_ROLE_TO_ASSUME }}
           role-session-name: ReleaseFpicGhcSession
       
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          ref: ${{ github.ref_name }}
+      
       - name: Build and push
         run: |
           # GHC_VERSION corresponds to the version of GHC that we are building.
