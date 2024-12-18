@@ -7,7 +7,7 @@ RUN apt-get update || \
         apt-get upgrade -y && \
         apt-get install -y libtool make m4 pkgconf autoconf automake curl libgmp-dev libncurses5-dev libtinfo6 build-essential
 
-COPY linux-fpic-ghc.sh /linux-fpic-ghc.sh
+COPY scripts/linux-fpic-ghc.sh /linux-fpic-ghc.sh
 RUN chmod +x /linux-fpic-ghc.sh
 WORKDIR /
 ENTRYPOINT ["./linux-fpic-ghc.sh"]
