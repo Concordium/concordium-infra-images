@@ -121,7 +121,7 @@ jobs:
         with:
           project_id: concordium-mgmt-0
           workload_identity_provider: projects/761241104197/locations/global/workloadIdentityPools/github/providers/concordium
-          service_account: ${{ env.GCP_SERVICE_ACCOUNT }}
+          service_account: github-infra-images-packer@concordium-mgmt-0.iam.gserviceaccount.com
       - name: Setup AWS REGION
         run: |
           VALUE=$(echo '${{ env.ENVIRONMENT_TO_AWS_REGION }}' | jq -r --arg key "${{ matrix.env }}" '.[$key]')
@@ -269,7 +269,7 @@ jobs:
         with:
           project_id: concordium-mgmt-0
           workload_identity_provider: projects/761241104197/locations/global/workloadIdentityPools/github/providers/concordium
-          service_account: ${{ env.GCP_SERVICE_ACCOUNT }}
+          service_account: github-infra-images-packer@concordium-mgmt-0.iam.gserviceaccount.com
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
