@@ -5,8 +5,6 @@ on:
   workflow_dispatch:
 env:
   PACKER_VERSION: "latest"
-  AWS_ROLE_ARN: "arn:aws:iam::192549843005:role/github-infra-images-packer"
-  GCP_SERVICE_ACCOUNT: "github-infra-images-packer@concordium-mgmt-0.iam.gserviceaccount.com"
   ENV_FILE_PATH: .github/shared-variables/.env
 
 concurrency:
