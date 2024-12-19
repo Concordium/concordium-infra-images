@@ -3,7 +3,7 @@ on:
     branches:
       - ekw/SRE-996/release-ghc-alpine
     tags:
-      - fpic-ghc/*
+      - alpine-ghc/*
 
 env:
   AWS_ROLE_TO_ASSUME: "arn:aws:iam::192549843005:role/github_concordium-ghc"
@@ -20,13 +20,19 @@ jobs:
     environment: release
     steps:
       
-      - name: aws creds
+      - name: Assume role
         uses: aws-actions/configure-aws-credentials@v4
         id: creds
         with:
           aws-region: "eu-west-1"
           role-to-assume: ${{ env.AWS_ROLE_TO_ASSUME }}
           role-session-name: ReleaseAlpineGhcSession
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          ref: ${{ github.ref_name }}
       
       - name: Build and push
         run: |
