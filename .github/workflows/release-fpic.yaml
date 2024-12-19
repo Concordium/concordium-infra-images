@@ -1,5 +1,7 @@
 on:
   push:
+    branches:
+      - ekw/SRE-1009/release-fpic
     tags:
       - fpic-ghc/*
 
