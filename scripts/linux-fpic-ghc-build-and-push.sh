@@ -17,4 +17,4 @@ fi
 docker build -t concordium/fpic-ghc:"${GHC_VERSION}" -f docker/linux-fpic-ghc.Dockerfile --build-arg BOOTSTRAP_GHC_VERSION="$BOOTSTRAP_GHC_VERSION" .
 mkdir out
 docker run --name fpic-ghc -e GHC_VERSION -v "$(pwd)/out":/out concordium/fpic-ghc:"${GHC_VERSION}"
-aws s3 cp out/ghc-"$GHC_VERSION"-fpic-"$INTEGER_VARIANT"-x86_64-unknown-linux-gnu.tar.gz s3://static-libraries.concordium.com/fpic-ghc-tester.tar.gz --grants read=uri=http://acs.amazonaws.com/groups/global/AllUsers
+aws s3 cp out/ghc-"$GHC_VERSION"-fpic-"$INTEGER_VARIANT"-x86_64-unknown-linux-gnu.tar.gz s3://static-libraries.concordium.com/ --grants read=uri=http://acs.amazonaws.com/groups/global/AllUsers
