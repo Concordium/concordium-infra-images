@@ -1,0 +1,82 @@
+name: Activate docker distribution
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: ""
+        required: true
+        type: choice
+        options:
+          - stagenet
+          - testnet
+          - mainnet
+        default: "stagenet"
+      source_image_tag:
+        description: ""
+        required: true
+        type: string
+      destination_image_tag:
+        description: ""
+        required: true
+        type: string
+      set_latest:
+        description: ""
+        required: true
+        type: boolean
+        default: true
+      delete_source:
+        description: ""
+        required: true
+        type: boolean
+        default: false
+
+env:
+  SOURCE_IMAGE_TAG: "concordium/${{ inputs.environment }}-node:${{ inputs.source_image_tag }}"
+  DESTINATION_IMAGE_TAG: "concordium/${{ inputs.environment }}-node:${{ inputs.source_image_tag }}"
+
+jobs:
+  update-docker-tag:
+    runs-on: ubuntu-latest
+    environment: release
+    steps:
+      - name: "dockerhub-login"
+        uses: docker/login-action@v
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: "Check Source image tag"
+        run: |
+          set +e
+          EXIT_CODE= docker manifest inspect ${{ env.SOURCE_IMAGE_TAG }}
+          if [[ EXIT_CODE -eq 1 ]]; then
+            echo "ERROR: image ${{ env.SOURCE_IMAGE_TAG }} does not exist"
+            exit 1
+          elif [[ EXIT_CODE -ne 0 ]]
+            echo "ERROR: $EXIT_CODE"
+            exit 1
+          fi
+
+      - name: "Check destination image tag"
+        run: |
+          set +e
+          EXIT_CODE= docker manifest inspect ${{ env.DESTINATION_IMAGE_TAG }}
+          if [[ EXIT_CODE -eq 0 ]]; then
+            echo "ERROR: image ${{ env.DESTINATION_IMAGE_TAG }} already exist"
+            exit 1
+          elif [[ EXIT_CODE -ne 1 ]]
+            echo "ERROR: $EXIT_CODE"
+            exit 1
+          fi
+
+      - name: "Update image tag"
+        run: |
+          set +e
+          docker image tag ${{ env.SOURCE_IMAGE_TAG }} ${{ env.DESTINATION_IMAGE_TAG }}
+          if [[ ${{ inputs.set_latest }} ]]; then
+            docker image tag ${{ env.SOURCE_IMAGE_TAG }} latest
+          fi
+          if [[ ${{ inputs.delete_source }} ]]; then
+            docker rmi ${{ env.SOURCE_IMAGE_TAG }}
+          fi
