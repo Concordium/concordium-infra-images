@@ -35,7 +35,7 @@ env:
 jobs:
   update-docker-tag:
     runs-on: ubuntu-latest
-    environment: release
+    environment: rename-tags
     steps:
       - name: "dockerhub-login"
         uses: docker/login-action@v
