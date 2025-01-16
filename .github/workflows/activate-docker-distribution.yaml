@@ -24,7 +24,7 @@ on:
         type: boolean
         default: true
       delete_source:
-        description: "should the old tag be deleted"
+        description: "Should the old tag be deleted"
         type: boolean
         default: false
 
