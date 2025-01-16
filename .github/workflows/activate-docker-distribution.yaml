@@ -4,8 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       environment:
-        description: ""
-        required: true
+        description: "The name of the environment for the node"
         type: choice
         options:
           - stagenet
@@ -13,21 +12,19 @@ on:
           - mainnet
         default: "stagenet"
       source_image_tag:
-        description: ""
+        description: "The tag that should be renamed"
         required: true
         type: string
       destination_image_tag:
-        description: ""
+        description: "The new tag name"
         required: true
         type: string
       set_latest:
-        description: ""
-        required: true
+        description: "Should latest tag be assigned to this image"
         type: boolean
         default: true
       delete_source:
-        description: ""
-        required: true
+        description: "should the old tag be deleted"
         type: boolean
         default: false
 
@@ -49,11 +46,12 @@ jobs:
       - name: "Check Source image tag"
         run: |
           set +e
-          EXIT_CODE= docker manifest inspect ${{ env.SOURCE_IMAGE_TAG }}
-          if [[ EXIT_CODE -eq 1 ]]; then
+          docker manifest inspect ${{ env.SOURCE_IMAGE_TAG }}
+          EXIT_CODE=$?
+          if [[ $EXIT_CODE -eq 1 ]]; then
             echo "ERROR: image ${{ env.SOURCE_IMAGE_TAG }} does not exist"
             exit 1
-          elif [[ EXIT_CODE -ne 0 ]]
+          elif [[ $EXIT_CODE -ne 0 ]]
             echo "ERROR: $EXIT_CODE"
             exit 1
           fi
@@ -61,11 +59,12 @@ jobs:
       - name: "Check destination image tag"
         run: |
           set +e
-          EXIT_CODE= docker manifest inspect ${{ env.DESTINATION_IMAGE_TAG }}
-          if [[ EXIT_CODE -eq 0 ]]; then
+          docker manifest inspect ${{ env.DESTINATION_IMAGE_TAG }}
+          EXIT_CODE=$?
+          if [[ $EXIT_CODE -eq 0 ]]; then
             echo "ERROR: image ${{ env.DESTINATION_IMAGE_TAG }} already exist"
             exit 1
-          elif [[ EXIT_CODE -ne 1 ]]
+          elif [[ $EXIT_CODE -ne 1 ]]
             echo "ERROR: $EXIT_CODE"
             exit 1
           fi
@@ -74,9 +73,9 @@ jobs:
         run: |
           set +e
           docker image tag ${{ env.SOURCE_IMAGE_TAG }} ${{ env.DESTINATION_IMAGE_TAG }}
-          if [[ ${{ inputs.set_latest }} ]]; then
+          if [[ "${{ inputs.set_latest }}" ]]; then
             docker image tag ${{ env.SOURCE_IMAGE_TAG }} latest
           fi
-          if [[ ${{ inputs.delete_source }} ]]; then
+          if [[ "${{ inputs.delete_source }}" ]]; then
             docker rmi ${{ env.SOURCE_IMAGE_TAG }}
           fi
