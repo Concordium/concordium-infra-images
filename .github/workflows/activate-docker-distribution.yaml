@@ -27,10 +27,13 @@ on:
         description: "Should the old tag be deleted"
         type: boolean
         default: false
+  push:
+    branches:
+      - ekw/SRE-1052/various-fixes
 
 env:
-  SOURCE_IMAGE_TAG: "concordium/${{ inputs.environment }}-node:${{ inputs.source_image_tag }}"
-  DESTINATION_IMAGE_TAG: "concordium/${{ inputs.environment }}-node:${{ inputs.destination_image_tag }}"
+  SOURCE_IMAGE_TAG: "concordium/stagenet-node:4.3.1-rc1" #"concordium/${{ inputs.environment }}-node:${{ inputs.source_image_tag }}"
+  DESTINATION_IMAGE_TAG: "concordium/stagenet-node:4.3.1-rc1test" #"concordium/${{ inputs.environment }}-node:${{ inputs.destination_image_tag }}"
 
 jobs:
   update-docker-tag:
@@ -51,7 +54,7 @@ jobs:
           if [[ $EXIT_CODE -eq 1 ]]; then
             echo "ERROR: image ${{ env.SOURCE_IMAGE_TAG }} does not exist"
             exit 1
-          elif [[ $EXIT_CODE -ne 0 ]]
+          elif [[ $EXIT_CODE -ne 0 ]]; then
             echo "ERROR: $EXIT_CODE"
             exit 1
           fi
@@ -64,7 +67,7 @@ jobs:
           if [[ $EXIT_CODE -eq 0 ]]; then
             echo "ERROR: image ${{ env.DESTINATION_IMAGE_TAG }} already exist"
             exit 1
-          elif [[ $EXIT_CODE -ne 1 ]]
+          elif [[ $EXIT_CODE -ne 1 ]]; then
             echo "ERROR: $EXIT_CODE"
             exit 1
           fi
@@ -73,9 +76,9 @@ jobs:
         run: |
           set +e
           docker image tag ${{ env.SOURCE_IMAGE_TAG }} ${{ env.DESTINATION_IMAGE_TAG }}
-          if [[ "${{ inputs.set_latest }}" ]]; then
+          if [[ false ]]; then
             docker image tag ${{ env.SOURCE_IMAGE_TAG }} latest
           fi
-          if [[ "${{ inputs.delete_source }}" ]]; then
+          if [[ false ]]; then
             docker rmi ${{ env.SOURCE_IMAGE_TAG }}
           fi
