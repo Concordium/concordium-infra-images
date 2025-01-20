@@ -83,4 +83,4 @@ jobs:
           if [[ false ]]; then
             docker rmi ${{ env.SOURCE_IMAGE_TAG }}
           fi
-          docker push
+          docker push ${{ env.DESTINATION_IMAGE_TAG }}
