@@ -32,8 +32,8 @@ on:
       - ekw/SRE-1052/various-fixes
 
 env:
-  SOURCE_IMAGE_TAG: "concordium/stagenet-node:4.3.1-rc1test" #"concordium/${{ inputs.environment }}-node:${{ inputs.source_image_tag }}"
-  DESTINATION_IMAGE_TAG: "concordium/stagenet-node:4.3.1-rc1test1" #"concordium/${{ inputs.environment }}-node:${{ inputs.destination_image_tag }}"
+  SOURCE_IMAGE_TAG: "concordium/stagenet-node:4.3.1-rc1test1" #"concordium/${{ inputs.environment }}-node:${{ inputs.source_image_tag }}"
+  DESTINATION_IMAGE_TAG: "concordium/stagenet-node:4.3.1-rc1test2" #"concordium/${{ inputs.environment }}-node:${{ inputs.destination_image_tag }}"
 
 jobs:
   update-docker-tag:
@@ -82,6 +82,15 @@ jobs:
           fi
           if [[ true ]]; then
             docker rmi docker.io/${{ env.SOURCE_IMAGE_TAG }}
-            curl "https://hub.docker.com/v2/repositories/concordium/concordium/stagenet-node/tags/4.3.1-rc1test/" -X DELETE -H "Authorization: JWT \${TOKEN}"
+            login_data() {
+            cat <<EOF
+            {
+            "username": "\${CRED_USR}",
+            "password": "\${CRED_PSW}"
+            }
+            EOF
+            }
+            TOKEN=`curl -s -H "Content-Type: application/json" -X POST -d "\$(login_data)" "https://hub.docker.com/v2/users/login/" | jq -r .token`
+            curl "https://hub.docker.com/v2/repositories/concordium/concordium/stagenet-node/tags/4.3.1-rc1test1/" -X DELETE -H "Authorization: JWT \${TOKEN}"
           fi
           docker push ${{ env.DESTINATION_IMAGE_TAG }}
