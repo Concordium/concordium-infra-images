@@ -80,10 +80,10 @@ jobs:
           if [[ false ]]; then
             docker image tag ${{ env.SOURCE_IMAGE_TAG }} latest
           fi
+          docker push ${{ env.DESTINATION_IMAGE_TAG }}
           if [[ false ]]; then
             docker rmi docker.io/${{ env.SOURCE_IMAGE_TAG }}
             
             TOKEN=`curl -s -H "Content-Type: application/json" -X POST -d "{\"username\": \"${{ secrets.DOCKERHUB_USERNAME}}\", \"password\": \"${{ secrets.DOCKERHUB_TOKEN }}\"}" "https://hub.docker.com/v2/users/login/" | jq -r .token`
             curl "https://hub.docker.com/v2/repositories/concordium/concordium/stagenet-node/tags/4.3.1-rc1test/" -X DELETE -H "Authorization: JWT \${TOKEN}"
           fi
-          docker push ${{ env.DESTINATION_IMAGE_TAG }}
