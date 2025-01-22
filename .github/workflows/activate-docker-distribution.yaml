@@ -33,7 +33,7 @@ on:
 
 env:
   SOURCE_IMAGE_TAG: "concordium/stagenet-node:4.3.1-rc1test1" #"concordium/${{ inputs.environment }}-node:${{ inputs.source_image_tag }}"
-  DESTINATION_IMAGE_TAG: "concordium/stagenet-node:4.3.1-rc1test3" #"concordium/${{ inputs.environment }}-node:${{ inputs.destination_image_tag }}"
+  DESTINATION_IMAGE_TAG: "concordium/stagenet-node:4.3.1-rc1test2" #"concordium/${{ inputs.environment }}-node:${{ inputs.destination_image_tag }}"
 
 jobs:
   update-docker-tag:
@@ -85,5 +85,5 @@ jobs:
             #docker rmi docker.io/${{ env.SOURCE_IMAGE_TAG }}
             
             TOKEN=`curl -s -H "Content-Type: application/json" -X POST -d "{\"username\": \"${{ secrets.DOCKERHUB_USERNAME}}\", \"password\": \"${{ secrets.DOCKERHUB_TOKEN }}\"}" "https://hub.docker.com/v2/users/login/" | jq -r .token`
-            curl -i "https://hub.docker.com/v2/repositories/concordium/stagenet-node/tags/4.3.1-rc1test/" -X DELETE -H "Authorization: JWT \"$TOKEN\""
+            curl "https://hub.docker.com/v2/repositories/concordium/stagenet-node/tags/4.3.1-rc1test3/" -X DELETE -H "Authorization: JWT $TOKEN"
           fi
