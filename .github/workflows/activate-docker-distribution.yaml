@@ -63,7 +63,7 @@ jobs:
         run: |
           set +e
           docker manifest inspect ${{ env.DESTINATION_IMAGE_TAG }}
-          EXIT_CODE=1 $?
+          EXIT_CODE=1 #$?
           if [[ $EXIT_CODE -eq 0 ]]; then
             echo "ERROR: image ${{ env.DESTINATION_IMAGE_TAG }} already exist"
             exit 1
