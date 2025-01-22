@@ -46,10 +46,10 @@ jobs:
       - name: "Check Source image tag"
         run: |
           set +e
-          docker manifest inspect ${{ inputs.SOURCE_IMAGE_TAG }}
+          docker manifest inspect ${{ env.SOURCE_IMAGE_TAG }}
           EXIT_CODE=$?
           if [[ $EXIT_CODE -eq 1 ]]; then
-            echo "ERROR: image ${{ inputs.SOURCE_IMAGE_TAG }} does not exist"
+            echo "ERROR: image ${{ env.SOURCE_IMAGE_TAG }} does not exist"
             exit 1
           elif [[ $EXIT_CODE -ne 0 ]]; then
             echo "ERROR: $EXIT_CODE"
@@ -59,10 +59,10 @@ jobs:
       - name: "Check destination image tag"
         run: |
           set +e
-          docker manifest inspect ${{ inputs.DESTINATION_IMAGE_TAG }}
+          docker manifest inspect ${{ env.DESTINATION_IMAGE_TAG }}
           EXIT_CODE=$?
           if [[ $EXIT_CODE -eq 0 ]]; then
-            echo "ERROR: image ${{ inputs.DESTINATION_IMAGE_TAG }} already exist"
+            echo "ERROR: image ${{ env.DESTINATION_IMAGE_TAG }} already exist"
             exit 1
           elif [[ $EXIT_CODE -ne 1 ]]; then
             echo "ERROR: $EXIT_CODE"
@@ -72,15 +72,15 @@ jobs:
       - name: "Update image tag"
         run: |
           set +e
-          docker pull ${{ inputs.SOURCE_IMAGE_TAG }}
-          docker image tag ${{ inputs.SOURCE_IMAGE_TAG }} ${{ inputs.DESTINATION_IMAGE_TAG }}
-          if [[ false ]]; then
-            docker image tag ${{ inputs.SOURCE_IMAGE_TAG }} latest
+          docker pull ${{ env.SOURCE_IMAGE_TAG }}
+          docker image tag ${{ env.SOURCE_IMAGE_TAG }} ${{ env.DESTINATION_IMAGE_TAG }}
+          if [[ ${{ inputs.set_latest }} ]]; then
+            docker image tag ${{ env.SOURCE_IMAGE_TAG }} latest
           fi
-          docker push ${{ inputs.DESTINATION_IMAGE_TAG }}
-          if [[ true ]]; then
-            #docker rmi docker.io/${{ inputs.SOURCE_IMAGE_TAG }}
+          docker push ${{ env.DESTINATION_IMAGE_TAG }}
+          if [[ ${{ inputs.delete_source }} ]]; then
+            #docker rmi docker.io/${{ env.SOURCE_IMAGE_TAG }}
             
             TOKEN=`curl -s -H "Content-Type: application/json" -X POST -d "{\"username\": \"${{ secrets.DOCKERHUB_USERNAME}}\", \"password\": \"${{ secrets.DOCKERHUB_TOKEN }}\"}" "https://hub.docker.com/v2/users/login/" | jq -r .token`
-            curl "https://hub.docker.com/v2/repositories/concordium/${{ inputs.environment }}/tags/${{ inputs.SOURCE_IMAGE_TAG }}/" -X DELETE -H "Authorization: JWT $TOKEN"
+            curl "https://hub.docker.com/v2/repositories/concordium/${{ inputs.environment }}/tags/${{ env.SOURCE_IMAGE_TAG }}/" -X DELETE -H "Authorization: JWT $TOKEN"
           fi
