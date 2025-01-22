@@ -79,7 +79,7 @@ jobs:
         run: |
           set +e
           #docker image tag ${{ env.SOURCE_IMAGE_TAG }} ${{ env.DESTINATION_IMAGE_TAG }}
-          docker buildx imagetools create ${{ env.SOURCE_IMAGE_TAG }} --tag ${{ env.DESTINATION_IMAGE_TAG }}
+          docker buildx imagetools create docker.io/${{ env.SOURCE_IMAGE_TAG }} --tag ${{ env.DESTINATION_IMAGE_TAG }}
           if [[ false ]]; then
             docker image tag ${{ env.SOURCE_IMAGE_TAG }} latest
           fi
