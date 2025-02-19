@@ -17,7 +17,6 @@ on:
         type: string
       destination_image_tag:
         description: "The new tag name"
-        required: true
         type: string
       set_latest:
         description: "Should latest tag be assigned to this image"
@@ -52,7 +51,7 @@ jobs:
             echo "::error:: image ${{ env.SOURCE_IMAGE_TAG }} does not exist"
             exit 1
           elif [[ $EXIT_CODE -ne 0 ]]; then
-            echo "::error:: $EXIT_CODE"
+            echo "::error:: exit code: $EXIT_CODE"
             exit 1
           fi
 
@@ -73,12 +72,15 @@ jobs:
         run: |
           set +e
           docker pull ${{ env.SOURCE_IMAGE_TAG }}
-          docker image tag ${{ env.SOURCE_IMAGE_TAG }} ${{ env.DESTINATION_IMAGE_TAG }}
-          
+          tag=${{ env.DESTINATION_IMAGE_TAG }}
+
           if [[ ${{ inputs.set_latest }} ]]; then
-            docker image tag ${{ env.SOURCE_IMAGE_TAG }} latest
+            $tag="latest"
+            docker image tag ${{ env.SOURCE_IMAGE_TAG }} $tag
+          else
+            docker image tag ${{ env.SOURCE_IMAGE_TAG }} $tag
           fi
-          docker push
+          docker push $tag
           if [[ ${{ inputs.delete_source }} ]]; then
             TOKEN=`curl -s -H "Content-Type: application/json" -X POST -d "{\"username\": \"${{ secrets.DOCKERHUB_USERNAME}}\", \"password\": \"${{ secrets.DOCKERHUB_TOKEN }}\"}" "https://hub.docker.com/v2/users/login/" | jq -r .token`
             curl "https://hub.docker.com/v2/repositories/concordium/${{ inputs.environment }}/tags/${{ env.SOURCE_IMAGE_TAG }}/" -X DELETE -H "Authorization: JWT $TOKEN"
