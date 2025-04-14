@@ -2,7 +2,7 @@ name: Release node images
 
 on:
   push:
-    paths:
+    branches:
       - lma/test
 
 permissions:
