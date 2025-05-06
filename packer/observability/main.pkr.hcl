@@ -63,8 +63,6 @@ source "amazon-ebs" "observability" {
 
 locals {
   url_versions = {
-    auditbeat        = "8.11.4",
-    filebeat         = "8.11.0",
     process-exporter = "0.7.10",
     promtail         = "3.0.0",
   }
@@ -94,8 +92,6 @@ locals {
   }
 
   urls = {
-    filebeat = "https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-${local.url_versions["filebeat"]}-amd64.deb",
-    auditbeat = "https://artifacts.elastic.co/downloads/beats/auditbeat/auditbeat-${local.url_versions["auditbeat"]}-amd64.deb",
     process-exporter = "https://github.com/ncabatoff/process-exporter/releases/download/v${local.url_versions["process-exporter"]}/process-exporter_${local.url_versions["process-exporter"]}_linux_amd64.deb",
     promtail = "https://github.com/grafana/loki/releases/download/v${local.url_versions["promtail"]}/promtail_${local.url_versions["promtail"]}_amd64.deb",
   }
