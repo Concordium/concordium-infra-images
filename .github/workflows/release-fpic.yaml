@@ -6,7 +6,7 @@ on:
 env:
   AWS_ROLE_TO_ASSUME: "arn:aws:iam::192549843005:role/github_concordium-ghc"
   INTEGER_VARIANT: "gmp"
-  GHC_VERSION: "9.6.6"
+  GHC_VERSION: "9.8.4"
   BOOTSTRAP_GHC_VERSION: "9.6.4"
 
 permissions:
