@@ -5,7 +5,7 @@ FROM haskell:${BOOTSTRAP_GHC_VERSION}-bullseye
 
 RUN apt-get update || \
         apt-get upgrade -y && \
-        apt-get install -y libtool make m4 pkgconf autoconf automake curl libgmp-dev libncurses5-dev libtinfo6 build-essential
+        apt-get install -y libtool make m4 pkgconf autoconf automake curl libgmp-dev libncurses5-dev libtinfo6 build-essential python3
 
 COPY scripts/linux-fpic-ghc.sh /linux-fpic-ghc.sh
 RUN chmod +x /linux-fpic-ghc.sh
