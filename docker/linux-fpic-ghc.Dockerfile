@@ -1,7 +1,7 @@
 # BOOTSTRAP_GHC_VERSION corresponds to the version of GHC that we are using to build ghc.
 ARG BOOTSTRAP_GHC_VERSION
 
-FROM haskell:${BOOTSTRAP_GHC_VERSION}-buster
+FROM haskell:${BOOTSTRAP_GHC_VERSION}-bullseye
 
 RUN apt-get update || \
         apt-get upgrade -y && \
