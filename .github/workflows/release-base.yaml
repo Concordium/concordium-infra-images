@@ -15,5 +15,8 @@ jobs:
         FLATBUFFERS_TAG=v22.12.06
         NVM_SH_VERSION=v0.37.2
         CMAKE_VERSION=3.25.1
+      # Currently, this Dockerfile uses a workaround that is tied to GHC 9.10.2, since
+      # at the time of writing, haskell base images were not available for GHC 9.10.2.
+      # When updating, the workaround should be removed if possible or updated if necessary.
       DOCKER_FILE_PATH: docker/base.Dockerfile
     secrets: inherit
