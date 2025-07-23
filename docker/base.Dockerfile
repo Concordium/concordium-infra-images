@@ -3,11 +3,13 @@ ARG GHC_VERSION=9.10.2
 # FROM haskell:${GHC_VERSION}
 
 ### BEGIN WORKAROUND ###
-# Since currently there is no haskell image with GHC 9.10.2, we use debian bullseye as base image.
+# Since currently there is no haskell image with GHC 9.10.2, we use debian bookworm as base image.
 # This is a workaround until the haskell image is updated. This is based on how the haskell image
 # is built. (See: https://github.com/haskell/docker-haskell/blob/master/9.10/bullseye/Dockerfile)
+# Note that bookworm supports postgresql 15, whereas bullseye supports version 13, which is too
+# old for the LTS-24.0 dependencies (required by the wallet-proxy).
 
-FROM debian:bullseye
+FROM debian:bookworm
 
 
 ENV LANG=C.UTF-8
