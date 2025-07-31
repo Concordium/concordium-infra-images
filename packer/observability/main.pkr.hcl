@@ -26,7 +26,7 @@ locals {
 source "googlecompute" "observability" {
   image_name = "${var.ami_name}"
   project_id = "concordium-mgmt-0"
-  source_image_family = "ubuntu-2204-lts"
+  source_image_family = "ubuntu-2404-lts"
   zone = "${var.gcp_zone}"
   machine_type = "e2-micro"
   ssh_username = "ubuntu"
@@ -42,7 +42,7 @@ source "amazon-ebs" "observability" {
   ami_regions   = "${var.target_aws_regions}"
   source_ami_filter {
     filters = {
-      name                = "ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server*" // Ubuntu 22.04 LTS
+      name                = "ubuntu/images/hvm-ssd/ubuntu-jammy-24.04-amd64-server*" // Ubuntu 24.04 LTS
       root-device-type    = "ebs"
       virtualization-type = "hvm"
     }
