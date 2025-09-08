@@ -106,6 +106,8 @@ jobs:
 
       - name: "Delete source image if selected"
         if: ${{ inputs.delete_source == true }}
+        # API path structure for image tags is like this: https://hub.docker.com/v2/repositories/concordium/stagenet-node/tags/9.0.7-3
         run: |
           TOKEN=`curl -s -H "Content-Type: application/json" -X POST -d "{\"username\": \"${{ secrets.DOCKERHUB_USERNAME}}\", \"password\": \"${{ secrets.DOCKERHUB_TOKEN }}\"}" "https://hub.docker.com/v2/users/login/" | jq -r .token`
-          curl "https://hub.docker.com/v2/repositories/concordium/${{ inputs.environment }}/tags/${{ env.IMAGE }}:${{ inputs.source_image_tag }}/" -X DELETE -H "Authorization: JWT $TOKEN"
+          curl "https://hub.docker.com/v2/repositories/concordium/${{ inputs.environment }}-node/tags/${{ inputs.source_image_tag }}/" -X DELETE -H "Authorization: JWT $TOKEN"
+
