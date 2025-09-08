@@ -81,7 +81,8 @@ jobs:
           docker image tag "${{ env.IMAGE }}:${{ inputs.source_image_tag }}" $TAG
           docker push $TAG
 
-      - name: "Update image tag"
+      - name: "Create new tag from user input"
+        if: ${{ inputs.destination_image_tag != false }}
         run: |
           set +e
           TAG="${{ env.IMAGE }}:${{ inputs.destination_image_tag }}"
