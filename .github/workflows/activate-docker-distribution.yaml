@@ -31,6 +31,20 @@ env:
   IMAGE: "concordium/${{ inputs.environment }}-node"
 
 jobs:
+  # This workflow needs approval - let's make it so a reviewer can see the input parameters.
+  print-input-params:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install jq
+        run : |
+          apt update
+          apt install -y jq
+      - name: Display parameters this workflow was called with
+        shell: bash
+        run:
+          printf '|Parameter|Value|\n|------|------|\n' >> $GITHUB_STEP_SUMMARY &&
+          jq -r 'to_entries | map("|\(.key)|\(.value)|") | join("\n") | @text' <<< '${{tojson(inputs)}}' | sed 's/\\n/\n/g' >> $GITHUB_STEP_SUMMARY
+
   update-docker-tag:
     runs-on: ubuntu-latest
     environment: rename-tags
