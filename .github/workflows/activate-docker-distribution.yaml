@@ -1,4 +1,5 @@
 name: Activate docker distribution
+run-name: Creating Docker tag ${{ inputs.destination_image_tag }} from source ${{ inputs.source_image_tag }}
 
 on:
   workflow_dispatch:
@@ -31,6 +32,20 @@ env:
   IMAGE: "concordium/${{ inputs.environment }}-node"
 
 jobs:
+  # This workflow needs approval - let's make it so a reviewer can see the input parameters.
+  print-input-params:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install jq
+        run : |
+          sudo apt update
+          sudo apt install -y jq
+      - name: Display parameters this workflow was called with
+        shell: bash
+        run:
+          printf '|Parameter|Value|\n|------|------|\n' >> $GITHUB_STEP_SUMMARY &&
+          jq -r 'to_entries | map("|\(.key)|\(.value)|") | join("\n") | @text' <<< '${{tojson(inputs)}}' | sed 's/\\n/\n/g' >> $GITHUB_STEP_SUMMARY
+
   update-docker-tag:
     runs-on: ubuntu-latest
     environment: rename-tags
@@ -41,7 +56,7 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: "Check Source image tag"
+      - name: "Checking source tag ${{ inputs.source_image_tag }} exists"
         run: |
           set +e
           docker manifest inspect "${{ env.IMAGE }}:${{ inputs.source_image_tag }}"
@@ -54,7 +69,7 @@ jobs:
             exit 1
           fi
 
-      - name: "Check destination image tag"
+      - name: "Checking destination tag ${{ inputs.destination_image_tag }} does not already exist"
         run: |
           set +e
           docker manifest inspect "${{ env.IMAGE }}:${{ inputs.destination_image_tag }}"
