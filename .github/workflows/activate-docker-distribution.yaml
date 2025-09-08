@@ -67,19 +67,29 @@ jobs:
             exit 1
           fi
 
-      - name: "Update image tag"
+      - name: "Pull source image"
         run: |
           set +e
           docker pull "${{ env.IMAGE }}:${{ inputs.source_image_tag }}"
-          TAG="${{ env.IMAGE }}:${{ inputs.destination_image_tag }}"
 
-          if [[ ${{ inputs.set_latest }} ]]; then
-            TAG="${{ env.IMAGE }}:latest"
-          fi
+      - name: "Push image with latest tag if selected"
+        if: ${{ inputs.set_latest == true }}
+        run: |
+          set +e
+          docker pull "${{ env.IMAGE }}:${{ inputs.source_image_tag }}"
+          TAG="${{ env.IMAGE }}:latest
           docker image tag "${{ env.IMAGE }}:${{ inputs.source_image_tag }}" $TAG
-
           docker push $TAG
-          if [[ ${{ inputs.delete_source }} ]]; then
-            TOKEN=`curl -s -H "Content-Type: application/json" -X POST -d "{\"username\": \"${{ secrets.DOCKERHUB_USERNAME}}\", \"password\": \"${{ secrets.DOCKERHUB_TOKEN }}\"}" "https://hub.docker.com/v2/users/login/" | jq -r .token`
-            curl "https://hub.docker.com/v2/repositories/concordium/${{ inputs.environment }}/tags/${{ env.IMAGE }}:${{ inputs.source_image_tag }}/" -X DELETE -H "Authorization: JWT $TOKEN"
-          fi
+
+      - name: "Update image tag"
+        run: |
+          set +e
+          TAG="${{ env.IMAGE }}:${{ inputs.destination_image_tag }}"
+          docker image tag "${{ env.IMAGE }}:${{ inputs.source_image_tag }}" $TAG
+          docker push $TAG
+
+      - name: "Delete source image if selected"
+        if: ${{ inputs.delete_source == true }}
+        run: |
+          TOKEN=`curl -s -H "Content-Type: application/json" -X POST -d "{\"username\": \"${{ secrets.DOCKERHUB_USERNAME}}\", \"password\": \"${{ secrets.DOCKERHUB_TOKEN }}\"}" "https://hub.docker.com/v2/users/login/" | jq -r .token`
+          curl "https://hub.docker.com/v2/repositories/concordium/${{ inputs.environment }}/tags/${{ env.IMAGE }}:${{ inputs.source_image_tag }}/" -X DELETE -H "Authorization: JWT $TOKEN"
