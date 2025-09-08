@@ -1,5 +1,5 @@
 name: Activate docker distribution
-run-name: Creating Docker tag ${{ inputs.destination_image_tag }} (source: ${{ inputs.source_image_tag }})
+run-name: Creating Docker tag ${{ inputs.destination_image_tag }} from source ${{ inputs.source_image_tag }}
 
 on:
   workflow_dispatch:
