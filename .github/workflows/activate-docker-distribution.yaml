@@ -36,10 +36,6 @@ jobs:
   print-input-params:
     runs-on: ubuntu-latest
     steps:
-      - name: Install jq
-        run : |
-          sudo apt update
-          sudo apt install -y jq
       - name: Display parameters this workflow was called with
         shell: bash
         run:
