@@ -3,6 +3,8 @@ name: Release observability images
 
 on:
   workflow_dispatch:
+  schedule:
+    - cron: "0 0 1 * *"
 env:
   PACKER_VERSION: "latest"
   ENV_FILE_PATH: .github/shared-variables/.env
