@@ -1,6 +1,5 @@
 name: Release observability images
 
-
 on:
   workflow_dispatch:
 env:

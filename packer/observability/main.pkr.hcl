@@ -1,7 +1,7 @@
 packer {
   required_plugins {
     amazon = {
-      version = ">= 1.3.0"
+      version = ">= 1.8.0"
       source  = "github.com/hashicorp/amazon"
     }
     googlecompute = {
@@ -17,9 +17,9 @@ locals {
     project = "${local.project_name_gcp}"
   }
   labels_aws = {
-    Project = "${var.project_name}"
-    Environment = "BaseImage"
-    SourceAMI = "{{ .SourceAMIName }}"
+    "packer:project" = "${var.project_name}"
+    "concordium:environment" = "BaseImage"
+    "packer:source-ami" = "{{ .SourceAMIName }}"
   }
 }
 

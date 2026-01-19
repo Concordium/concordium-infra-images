@@ -21,10 +21,10 @@ def fetch_aws_images_by_tag(tag_key, tag_value, region):
         return None
 
 
-def group_aws_images_by_tag(images, tag_key):
+def group_aws_images_by_tags(images, tag_keys):
     groups = defaultdict(list)
     for image in images:
-        env_tag = next((tag['Value'] for tag in image['Tags'] if tag['Key'] == tag_key), None)
+        env_tag = next((tag['Value'] for tag in image['Tags'] if tag['Key'] in tag_keys), None)
         if env_tag:
             groups[env_tag].append(image)
     return groups
@@ -39,10 +39,10 @@ def sort_aws_images_by_creation_date(images):
 def fetch_aws_images(args):
     json_output = {}
     for region in args.aws_regions:
-        for images_info in [fetch_aws_images_by_tag("Project", args.project_name, region)]:
+        for images_info in [fetch_aws_images_by_tag("Project", args.project_name, region), fetch_aws_images_by_tag("packer:project", args.project_name, region)]:
             if images_info and images_info.get('Images'):
                 images = images_info['Images']
-                grouped_images = group_aws_images_by_tag(images, "Environment")
+                grouped_images = group_aws_images_by_tags(images, [ "Environment", "concordium:environment" ])
                 sort_aws_images_by_creation_date(grouped_images)
                 for environment, imgs in grouped_images.items():
                     if len(imgs) >= args.image_count_upper_limit:
