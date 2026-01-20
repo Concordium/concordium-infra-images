@@ -17,9 +17,12 @@ locals {
     project = "${local.project_name_gcp}"
   }
   labels_aws = {
+    "Name" = "${var.ami_name}"
     "packer:project" = "${var.project_name}"
-    "concordium:environment" = "BaseImage"
     "packer:source-ami" = "{{ .SourceAMIName }}"
+    "concordium:environment" = "BaseImage"
+    "concordium:permanent" = "False"
+    "concordium:provisioner" = "Packer"
   }
 }
 

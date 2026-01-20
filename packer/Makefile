@@ -1,5 +1,5 @@
 LOG_FILE := build.log
-NODE_VERSION := 7.0.5-0
+NODE_VERSION := 10.0.3-0
 
 .PHONY: all
 all: download-ami build-observability build-node
