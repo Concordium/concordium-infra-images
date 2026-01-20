@@ -29,8 +29,13 @@ echo "$json_input" | jq -r 'to_entries | .[] | .key as $key | .value[] | "\($key
         echo "Region is not provided for $id"
         exit 2;
       fi
-      snapshot_ids=$(aws ec2 describe-snapshots --region="$aws_region" --filter "Name=tag:Environment,Values=$environment" --query "Snapshots[? contains(Description, '$id')].SnapshotId" --output text)
-      for snapshot_id in $snapshot_ids; do
+      old_tag_snapshot_ids=$(aws ec2 describe-snapshots --region="$aws_region" --filter "Name=tag:Environment,Values=$environment" --query "Snapshots[? contains(Description, '$id')].SnapshotId" --output text)
+      for snapshot_id in $old_tag_snapshot_ids; do
+        echo "Marking AMI $id and snapshot $snapshot_id for deletion"
+        aws ec2 create-tags --region="$aws_region" --resources "$snapshot_id" "$id" --tags Key=ToBeDeleted,Value=True
+      done
+      new_tag_snapshot_ids=$(aws ec2 describe-snapshots --region="$aws_region" --filter "Name=tag:concordium:environment,Values=$environment" --query "Snapshots[? contains(Description, '$id')].SnapshotId" --output text)
+      for snapshot_id in $new_tag_snapshot_ids; do
         echo "Marking AMI $id and snapshot $snapshot_id for deletion"
         aws ec2 create-tags --region="$aws_region" --resources "$snapshot_id" "$id" --tags Key=ToBeDeleted,Value=True
       done
