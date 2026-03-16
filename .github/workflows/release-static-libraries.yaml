@@ -10,7 +10,7 @@ jobs:
       SERVICE_NAME: "static-libraries"
       BUILD_ARGS: |
         UBUNTU_VERSION=20.04
-        RUST_VERSION=1.82
+        RUST_VERSION=1.94
         GHC_VERSION=9.10.2
         STACK_VERSION=3.1.1
         PROTOC_VERSION=28.3
