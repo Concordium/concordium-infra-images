@@ -102,6 +102,10 @@ locals {
 
 build {
   sources = var.cloud_provider == "aws" ? ["source.amazon-ebs.observability"] : ["source.googlecompute.observability"]
+  provisioner "file" {
+    source      = "logrotate-timer-override.conf"
+    destination = "/tmp/logrotate-timer-override.conf"
+  }
   provisioner "shell" {
     inline = concat(flatten([
       for key, value in local.urls : [
@@ -122,7 +126,10 @@ build {
       ],
       [format("sudo --set-home pip install %s", join(" ", [for key, value in local.python_versions : "${key}==${value}"]))],
       ["sudo systemctl disable unattended-upgrades"],
+      ["sudo sed  --in-place 's/weekly/daily/' /etc/logrotate.d/rsyslog"],
       ["sudo sed  --in-place '/{/a \\        maxsize 10G' /etc/logrotate.d/rsyslog"],
+      ["sudo mkdir --parents /etc/systemd/system/logrotate.timer.d"],
+      ["sudo mv /tmp/logrotate-timer-override.conf /etc/systemd/system/logrotate.timer.d/override.conf"]
     )
   }
 }
